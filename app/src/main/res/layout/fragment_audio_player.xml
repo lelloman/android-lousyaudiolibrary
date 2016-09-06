@@ -44,4 +44,9 @@
         android:layout_marginTop="32dp"
         android:max="10000"
         />
+
+    <com.lelloman.lousyaudiolibrary.demo.FftView
+        android:id="@+id/fftView"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"/>
 </LinearLayout>

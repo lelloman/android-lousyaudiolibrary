@@ -11,20 +11,21 @@ import android.widget.SeekBar;
 import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
-import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
+import com.lelloman.lousyaudiolibrary.player.FftAudioPlayer;
 
 
 public class PlayerFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
-	private SlowAudioPlayer player = null;
+	private FftAudioPlayer player = null;
 
 	private Button btnPause;
 	private Button btnPlay;
 	private ToggleButton btnSlow;
 	private SeekBar seekBarTime;
 	private SeekBar seekBarSpeed;
+	private FftView fftView;
 
 	public static PlayerFragment newInstance(int resId) {
 		PlayerFragment frag = new PlayerFragment();
@@ -36,7 +37,14 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 		return frag;
 	}
 
-	AudioPlayer.EventsListener playerListener = new AudioPlayer.EventsListener() {
+	FftAudioPlayer.EventsListener playerListener = new FftAudioPlayer.EventsListener() {
+		@Override
+		public void onFftFrame(double[] fftFrame) {
+			if(fftView != null){
+				fftView.setFftFrame(fftFrame);
+			}
+		}
+
 		@Override
 		public void onStart(AudioPlayer player) {
 
@@ -66,7 +74,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 		if (args != null)
 			resId = args.getInt(ARG_SOURCE_RES_ID, resId);
 
-		player = new SlowAudioPlayer(playerListener);
+		player = new FftAudioPlayer(playerListener);
 
 		boolean init = player.init(getActivity(), resId);
 
@@ -89,6 +97,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 		btnPlay = (Button) rootView.findViewById(R.id.btnPlay);
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
+		fftView = (FftView) rootView.findViewById(R.id.fftView);
 
 		btnPlay.setOnClickListener(this);
 		btnPause.setOnClickListener(this);

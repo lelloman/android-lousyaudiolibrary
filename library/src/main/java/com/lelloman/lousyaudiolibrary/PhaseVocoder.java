@@ -22,16 +22,14 @@ public class PhaseVocoder {
 
 	private AudioReader audioReader;
 	private BufferManager manager;
+	private boolean slow;
 
 	public PhaseVocoder(AudioReader reader, double tscale, int N, int H) {
 
 		this.audioReader = reader;
-		this.tscale = tscale;
 		this.N = N;
 		this.H = H;
-
-		int stepSize = (int) (H * tscale);
-		this.manager = new BufferManager(reader, N + H, stepSize);
+		setScale(tscale);
 
 		N2 = N * 2;
 		halfN = N / 2;
@@ -57,12 +55,14 @@ public class PhaseVocoder {
 		this.tscale = v;
 		int stepSize = (int) (H * tscale);
 		this.manager = new BufferManager(audioReader, N + H, stepSize);
+		slow = v < .99;
 	}
 
 	public double[] next() {
 
 		buffer = manager.next();
 		if (buffer == null) return null;
+
 
 		for (int i = 0; i < NmH; i++)
 			sigout[i] = sigout[i + H];
@@ -86,6 +86,10 @@ public class PhaseVocoder {
 
 		System.arraycopy(sigout, 0, output, 0, H);
 		return output;
+	}
+
+	public double[] getCurrentFftFrame(){
+		return spec1;
 	}
 
 	private void makeSpec(double[] spec, int offset) {
