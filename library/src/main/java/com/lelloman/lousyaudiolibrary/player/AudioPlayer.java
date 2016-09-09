@@ -1,12 +1,11 @@
 package com.lelloman.lousyaudiolibrary.player;
 
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
-import com.lelloman.lousyaudiolibrary.AudioReader;
+import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.util.Arrays;
 
@@ -25,7 +24,7 @@ public class AudioPlayer implements Runnable {
     public static final int RELEASED = 4;
     public static final int ABORTED = 5;
 
-    protected AudioReader reader;
+    protected IAudioReader reader;
     private AudioTrack audioTrack;
 
     protected boolean running = false;
@@ -42,40 +41,13 @@ public class AudioPlayer implements Runnable {
         this.listener = listener;
     }
 
-    public boolean init(AudioReader reader){
+    public boolean init(IAudioReader reader){
         try {
             this.reader = reader;
             initAudioTrack();
             state = READY_TO_PLAY;
             return true;
         }catch(Exception e){
-            e.printStackTrace();
-            state = ABORTED;
-            return false;
-        }
-    }
-
-    public boolean init(String src) {
-
-        try {
-            reader = new AudioReader(src);
-            initAudioTrack();
-            state = READY_TO_PLAY;
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            state = ABORTED;
-            return false;
-        }
-    }
-
-    public boolean init(Context context, int resId) {
-        try {
-            reader = new AudioReader(context, resId);
-            initAudioTrack();
-            state = READY_TO_PLAY;
-            return true;
-        } catch (Exception e) {
             e.printStackTrace();
             state = ABORTED;
             return false;

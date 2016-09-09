@@ -1,5 +1,7 @@
 package com.lelloman.lousyaudiolibrary;
 
+import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
+
 import org.jtransforms.fft.DoubleFFT_1D;
 
 
@@ -20,11 +22,11 @@ public class PhaseVocoder {
 	private double[] output;// = new double[H];
 	private DoubleFFT_1D fft;// = new DoubleFFT_1D(N);
 
-	private AudioReader audioReader;
+	private IAudioReader audioReader;
 	private BufferManager manager;
 	private boolean slow;
 
-	public PhaseVocoder(AudioReader reader, double tscale, int N, int H) {
+	public PhaseVocoder(IAudioReader reader, double tscale, int N, int H) {
 
 		this.audioReader = reader;
 		this.N = N;

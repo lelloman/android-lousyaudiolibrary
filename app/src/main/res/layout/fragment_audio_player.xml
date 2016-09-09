@@ -45,8 +45,8 @@
         android:max="10000"
         />
 
-    <com.lelloman.lousyaudiolibrary.demo.FftView
-        android:id="@+id/fftView"
+    <com.lelloman.lousyaudiolibrary.view.VolumeView
+        android:id="@+id/volumeView"
         android:layout_width="match_parent"
         android:layout_height="100dp"/>
 </LinearLayout>

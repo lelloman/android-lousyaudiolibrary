@@ -11,21 +11,25 @@ import android.widget.SeekBar;
 import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
-import com.lelloman.lousyaudiolibrary.player.FftAudioPlayer;
+import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
+import com.lelloman.lousyaudiolibrary.reader.AudioReader;
+import com.lelloman.lousyaudiolibrary.view.VolumeView;
 
 
 public class PlayerFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
-	private FftAudioPlayer player = null;
+	private SlowAudioPlayer player = null;
 
 	private Button btnPause;
 	private Button btnPlay;
 	private ToggleButton btnSlow;
 	private SeekBar seekBarTime;
 	private SeekBar seekBarSpeed;
-	private FftView fftView;
+	private VolumeView volumeView;
+
+	private int resId;
 
 	public static PlayerFragment newInstance(int resId) {
 		PlayerFragment frag = new PlayerFragment();
@@ -37,14 +41,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 		return frag;
 	}
 
-	FftAudioPlayer.EventsListener playerListener = new FftAudioPlayer.EventsListener() {
-		@Override
-		public void onFftFrame(double[] fftFrame) {
-			if(fftView != null){
-				fftView.setFftFrame(fftFrame);
-			}
-		}
-
+	SlowAudioPlayer.EventsListener playerListener = new SlowAudioPlayer.EventsListener() {
 		@Override
 		public void onStart(AudioPlayer player) {
 
@@ -70,13 +67,18 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 		Bundle args = getArguments();
 
-		int resId = -1;
+		resId = -1;
 		if (args != null)
 			resId = args.getInt(ARG_SOURCE_RES_ID, resId);
 
-		player = new FftAudioPlayer(playerListener);
+		player = new SlowAudioPlayer(playerListener);
 
-		boolean init = player.init(getActivity(), resId);
+		boolean init = false;
+		try {
+			init = player.init(new AudioReader(getActivity(), resId));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		if (init) {
 			player.start();
@@ -97,7 +99,16 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 		btnPlay = (Button) rootView.findViewById(R.id.btnPlay);
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
-		fftView = (FftView) rootView.findViewById(R.id.fftView);
+		volumeView = (VolumeView) rootView.findViewById(R.id.volumeView);
+
+		if(resId != -1){
+			try {
+				volumeView.setAudioReader(new AudioReader(getActivity(), resId));
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 
 		btnPlay.setOnClickListener(this);
 		btnPause.setOnClickListener(this);

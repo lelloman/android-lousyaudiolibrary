@@ -3,6 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 group='com.github.lelloman'
 
+// https://jitpack.io/com/github/lelloman/android-lousyaudiolibrary/v0.1.1/build.log
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.0"
@@ -11,7 +12,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "0.1.1"
     }
     buildTypes {
         release {

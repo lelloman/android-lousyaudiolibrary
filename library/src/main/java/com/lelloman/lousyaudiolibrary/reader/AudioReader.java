@@ -1,4 +1,4 @@
-package com.lelloman.lousyaudiolibrary;
+package com.lelloman.lousyaudiolibrary.reader;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -10,7 +10,7 @@ import android.os.Build;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class AudioReader {
+public class AudioReader implements IAudioReader {
 
     public static final int CODEC_TIMEOUT_US = 1000;
     public static final int NO_OUTPUT_COUNTER_LIMIT = 10;
@@ -97,6 +97,7 @@ public class AudioReader {
         return mime;
     }
 
+    @Override
     public byte[] nextChunk(){
 
         synchronized (this) {
@@ -112,6 +113,7 @@ public class AudioReader {
         return chunk;
     }
 
+    @Override
     public double[] nextChunkDouble(){
         byte[] chunk = nextChunk();
 
@@ -199,34 +201,42 @@ public class AudioReader {
         }
     }
 
+    @Override
     public long getDurationMs(){
         return durationMs;
     }
 
+    @Override
     public long getCurrentMs(){
         return currentMs;
     }
 
+    @Override
     public double getPercent(){
         return percent;
     }
 
+    @Override
     public int getSampleRate(){
         return sampleRate;
     }
 
+    @Override
     public int getChannels(){
         return channels;
     }
 
+    @Override
     public int getBitRate() {
         return bitRate;
     }
 
+    @Override
     public boolean getSawOutputEOS(){
         return sawOutputEOS;
     }
 
+    @Override
     public void reset(){
         codec.flush();
         seek(0);
@@ -234,14 +244,17 @@ public class AudioReader {
         sawInputEOS = false;
     }
 
+    @Override
     public void seek(long pos){
         extractor.seekTo(pos, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
     }
+    @Override
     public void seek(double percent){
         long pos = (long) (percent * durationUs);
         seek(pos);
     }
 
+    @Override
     public void release(){
 
         if (released) return;

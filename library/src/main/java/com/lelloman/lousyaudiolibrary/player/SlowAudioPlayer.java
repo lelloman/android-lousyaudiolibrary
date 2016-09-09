@@ -1,20 +1,17 @@
 package com.lelloman.lousyaudiolibrary.player;
 
-import android.content.Context;
-
-import com.lelloman.lousyaudiolibrary.AudioReader;
 import com.lelloman.lousyaudiolibrary.PhaseVocoder;
+import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.nio.ByteBuffer;
 
 public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	protected static final int FRAME_SIZE = 4096 * 4;
-	protected static final int HOP = FRAME_SIZE / 4;
+	protected static final int HOP = FRAME_SIZE / 8;
 	protected static final float SCALE = .5f;
 
 	private boolean slow = false;
-	private byte[] prevChunk = null;
 
 	private PhaseVocoder vocoder = null;
 	private ByteBuffer miniByteBuffer = ByteBuffer.allocate(2);
@@ -24,21 +21,7 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 	}
 
 	@Override
-	public boolean init(Context context, int resId) {
-		boolean output = super.init(context, resId);
-		if (output) initVocoder();
-		return output;
-	}
-
-	@Override
-	public boolean init(String src) {
-		boolean output = super.init(src);
-		if (output) initVocoder();
-		return output;
-	}
-
-	@Override
-	public boolean init(AudioReader reader) {
+	public boolean init(IAudioReader reader) {
 		boolean output = super.init(reader);
 		if (output) initVocoder();
 		return output;
@@ -74,7 +57,6 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 			byte[] chunkClone = chunk.clone();
 			theChunk = chunkClone;
-			prevChunk = chunkClone;
 		}
 
 		addChunkToBuffer(theChunk);

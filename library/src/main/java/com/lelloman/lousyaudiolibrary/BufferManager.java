@@ -1,17 +1,19 @@
 package com.lelloman.lousyaudiolibrary;
 
+import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
+
 public class BufferManager {
 
 	public final int bufferSize, stepSize;
 
 	private double[] buffer;
 	private double[] chunk;
-	private AudioReader reader;
+	private IAudioReader reader;
 	private int cursor = 0;
 	private boolean end = false;
 
 
-	public BufferManager(AudioReader reader, int bufferSize, int stepSize) {
+	public BufferManager(IAudioReader reader, int bufferSize, int stepSize) {
 
 		this.bufferSize = bufferSize;
 		this.stepSize = stepSize;
