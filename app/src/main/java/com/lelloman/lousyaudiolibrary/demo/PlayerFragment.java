@@ -13,10 +13,14 @@ import android.widget.ToggleButton;
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
 import com.lelloman.lousyaudiolibrary.reader.AudioReader;
+import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
 
 
-public class PlayerFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, VolumeView.OnClickListener {
+public class PlayerFragment extends Fragment implements
+		View.OnClickListener,
+		SeekBar.OnSeekBarChangeListener,
+		VolumeView.OnClickListener {
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
@@ -27,6 +31,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 	private ToggleButton btnSlow;
 	private SeekBar seekBarSpeed;
 	private VolumeView volumeView;
+	private VolumeReader volumeReader;
 
 	private int resId;
 
@@ -75,17 +80,21 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 		boolean init = false;
 		try {
-			init = player.init(new AudioReader(getActivity(), resId));
+			AudioReader audioReader = new AudioReader(getActivity(), resId);
+			init = player.init(audioReader);
+			if (init) {
+				player.start();
+				int framesCount = (int) audioReader.getDurationFrames();
+				int width = getResources().getDisplayMetrics().widthPixels;
+
+				final int pcmFramesPerVolumeFrame = (int) (framesCount / width) * VolumeView.K;
+				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), pcmFramesPerVolumeFrame);
+			}else{
+				throw new Exception("mboh");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		if (init) {
-			player.start();
-		} else {
-			// TODO mboh
-		}
-
 
 	}
 
@@ -99,14 +108,8 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
 		volumeView = (VolumeView) rootView.findViewById(R.id.volumeView);
-
-		if (resId != -1) {
-			try {
-				volumeView.setAudioReader(new AudioReader(getActivity(), resId));
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		if(volumeReader != null){
+			volumeView.setVolumeReader(volumeReader);
 		}
 
 		btnPlay.setOnClickListener(this);
@@ -175,5 +178,8 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 	@Override
 	public void onClick(VolumeView volumeView, double percentX) {
 		player.seek(percentX);
+		if(volumeView != null){
+			volumeView.setCursor(percentX);
+		}
 	}
 }

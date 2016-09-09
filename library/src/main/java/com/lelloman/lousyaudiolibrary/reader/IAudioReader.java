@@ -8,6 +8,8 @@ public interface IAudioReader {
 
 	long getDurationMs();
 
+	long getDurationFrames();
+
 	long getCurrentMs();
 
 	double getPercent();

@@ -7,30 +7,33 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 
 
-public class VolumeView extends View implements View.OnTouchListener{
+public class VolumeView extends View implements View.OnTouchListener, VolumeReader.OnVolumeReadListener {
 
 	public interface OnClickListener {
 		void onClick(VolumeView volumeView, double percentX);
 	}
 
+	public static final int K = 4;
+	private static final Object BITMAP_LOCK = 0xb00b5;
+
 	private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-	private IAudioReader audioReader;
 	private Bitmap bitmap;
+	private Canvas canvas;
 	private Rect srcRect, dstRect;
-	private Thread bitmapDrawer;
 
 	private double cursor = 0;
 	private OnClickListener onClickListener;
+	private VolumeReader volumeReader;
+
+	private int minHeight, maxHeight;
 
 	public VolumeView(Context context) {
 		this(context, null);
@@ -49,6 +52,11 @@ public class VolumeView extends View implements View.OnTouchListener{
 		setOnTouchListener(this);
 	}
 
+	public void setVolumeReader(VolumeReader volumeReader){
+		this.volumeReader = volumeReader;
+		volumeReader.setOnVolumeReadListener(this);
+	}
+
 	public void setOnClickListener(OnClickListener l) {
 		this.onClickListener = l;
 	}
@@ -59,60 +67,50 @@ public class VolumeView extends View implements View.OnTouchListener{
 
 		if (w == 0 || h == 0) return;
 
-		if (bitmap != null) {
-			bitmap.recycle();
-		}
+		int height = getHeight();
+		minHeight = (int) (height * .05f);
+		maxHeight = (int) (height * .95f);
 
-		bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-		srcRect = new Rect(0, 0, w, h);
+		synchronized (BITMAP_LOCK) {
+			if (bitmap != null) {
+				bitmap.recycle();
+			}
+
+			bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+			canvas = new Canvas(bitmap);
+			srcRect = new Rect(0, 0, w, h);
+		}
 		drawBitmap();
 	}
 
 	private void drawBitmap() {
-		final int width = getWidth();
-		if (audioReader == null || bitmapDrawer != null || width <= 0) {
-			return;
-		}
 
-		final Canvas canvas = new Canvas(bitmap);
-		final int K = 4;
-		double framesCount = (audioReader.getDurationMs() / 1000.) * audioReader.getSampleRate();
-		final int pcmFramesPerVolumeFrame = (int) (framesCount / width) * K;
-		Log.d("VolumeView", String.format("frameCount = %.2f, framesPerVolum = %s", framesCount, pcmFramesPerVolumeFrame));
-		final int height = getHeight();
-		final int minHeight = (int) (height * .05f);
-		final int maxHeight = (int) (height * .95f);
-
-		bitmapDrawer = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				VolumeReader volumeReader = new VolumeReader(audioReader, pcmFramesPerVolumeFrame);
-				Log.d(VolumeView.class.getSimpleName(), "start bitmap drawer");
-				for (int i = 0; i < width; i += K) {
-					Double v = volumeReader.nextFrame();
-					if (v == null) {
-						break;
-					}
-					int barLength = minHeight + (int) (v * maxHeight);
-					int d = (height - barLength) / 2;
-					canvas.drawLine(i, height - d, i, d, paint);
-					if(i % 20 == 0){
-						postInvalidate();
-					}
-				}
-				Log.d(VolumeView.class.getSimpleName(), "end bitmap drawer");
+		synchronized (BITMAP_LOCK){
+			int i = 0;
+			Double d = volumeReader.getVolume(i);
+			while(d != null){
+				drawFrame(i++, d);
+				d = volumeReader.getVolume(i);
 			}
-		});
-
-		bitmapDrawer.start();
+		}
 	}
 
-	public void setAudioReader(IAudioReader audioReader) {
-		this.audioReader = audioReader;
-		if (bitmap != null) {
-			drawBitmap();
-		}
+	@Override
+	public void onNewFrame(int frameIndex, int totFrames, Double value) {
+
+		if(canvas == null) return;
+		drawFrame(frameIndex, value);
+
+		postInvalidate();
+	}
+
+	private void drawFrame(int frameIndex, double value){
+		int height = getHeight();
+
+		int barLength = minHeight + (int) (value * maxHeight);
+		int d = (height - barLength) / 2;
+		int x = frameIndex*K;
+		canvas.drawLine(x, height - d, x, d, paint);
 	}
 
 	public void setCursor(double d){
