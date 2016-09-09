@@ -34,6 +34,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	private VolumeReader volumeReader;
 
 	private int minHeight, maxHeight;
+	private int zoomLevel;
 
 	public VolumeView(Context context) {
 		this(context, null);
@@ -55,6 +56,10 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	public void setVolumeReader(VolumeReader volumeReader){
 		this.volumeReader = volumeReader;
 		volumeReader.setOnVolumeReadListener(this);
+		selectZoomLevel(getWidth());
+		if(bitmap != null){
+			drawBitmap();
+		}
 	}
 
 	public void setOnClickListener(OnClickListener l) {
@@ -80,25 +85,42 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 			canvas = new Canvas(bitmap);
 			srcRect = new Rect(0, 0, w, h);
 		}
+		selectZoomLevel(w);
 		drawBitmap();
+	}
+
+	private void selectZoomLevel(int width){
+		if(volumeReader == null) return;
+
+		int[] levels = volumeReader.getZoomLevels();
+		zoomLevel = levels.length-1;
+
+		for(int i = 0; i< levels.length; i++){
+			if(levels[i] > width){
+				this.zoomLevel = i;
+				break;
+			}
+		}
+
 	}
 
 	private void drawBitmap() {
 
 		synchronized (BITMAP_LOCK){
 			int i = 0;
-			Double d = volumeReader.getVolume(i);
+			Double d = volumeReader.getVolume(zoomLevel, i);
 			while(d != null){
 				drawFrame(i++, d);
-				d = volumeReader.getVolume(i);
+				d = volumeReader.getVolume(zoomLevel, i);
 			}
 		}
 	}
 
 	@Override
-	public void onNewFrame(int frameIndex, int totFrames, Double value) {
+	public void onNewFrame(int zoomLevel, int frameIndex, int totFrames, Double value) {
 
-		if(canvas == null) return;
+		if(canvas == null || zoomLevel != this.zoomLevel) return;
+
 		drawFrame(frameIndex, value);
 
 		postInvalidate();

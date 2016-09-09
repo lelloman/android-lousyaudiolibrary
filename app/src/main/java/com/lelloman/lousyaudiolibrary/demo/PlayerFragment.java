@@ -78,11 +78,10 @@ public class PlayerFragment extends Fragment implements
 
 		player = new SlowAudioPlayer(playerListener);
 
-		boolean init = false;
 		try {
 			AudioReader audioReader = new AudioReader(getActivity(), resId);
-			init = player.init(audioReader);
-			if (init) {
+
+			if (player.init(audioReader)) {
 				player.start();
 				int framesCount = (int) audioReader.getDurationFrames();
 				int width = getResources().getDisplayMetrics().widthPixels;

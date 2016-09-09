@@ -5,61 +5,59 @@ import java.nio.ByteBuffer;
 public class VolumeReader {
 
 	public interface OnVolumeReadListener {
-		void onNewFrame(int frameIndex, int totFrames, Double value);
+		void onNewFrame(int zoomLevel, int frameIndex, int totFrames, Double value);
 	}
 
 	private IAudioReader audioReader;
 	private int chunkCursor;
 	private byte[] chunk;
-	private int pcmFramesPerVolumeFrame;
 	private byte[] miniByteBuffer;
-	private Double[] volume;
+	private Double[][] data;
 	private int cursor;
 	private boolean run = true;
 	private OnVolumeReadListener listener;
+	private long totalFrames;
+	private int[] zoomLevels;
 
-	public VolumeReader(final IAudioReader audioReader, final int pcmFramesPerVolumeFrame) {
+	public VolumeReader(final IAudioReader audioReader, int... zoomLevels) {
 		this.audioReader = audioReader;
-		this.pcmFramesPerVolumeFrame = pcmFramesPerVolumeFrame;
 		this.miniByteBuffer = new byte[2];
-		int totalFrames = (int) (audioReader.getDurationFrames() / pcmFramesPerVolumeFrame);
-		volume = new Double[totalFrames];
+		totalFrames = audioReader.getDurationFrames();
+		data = new Double[zoomLevels.length][];
+		this.zoomLevels = zoomLevels;
+
+		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
+		for(int i = 0; i< zoomLevels.length; i++){
+			data[i] = new Double[zoomLevels[i]];
+			makers[i] = new VolumeMaker(i, zoomLevels[i], data[i]);
+		}
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 
-				int volumeLength = volume.length;
-				while(run && cursor < volume.length && !audioReader.getSawOutputEOS()){
+				while(run && cursor < totalFrames && !audioReader.getSawOutputEOS()){
 
-					double max = 0;
-
-					for (int i = 0; i < pcmFramesPerVolumeFrame; i++) {
-						miniByteBuffer[1] = getNextByte();
-						miniByteBuffer[0] = getNextByte();
-						short s = ByteBuffer.wrap(miniByteBuffer).getShort();
-						short v = (short) Math.abs(s);
-						if(v > max){
-							max = v;
-						}
-					}
-					double output = max / (double) Short.MAX_VALUE;
-
-					volume[cursor] = output;
-					if(listener != null){
-						listener.onNewFrame(cursor++, volumeLength, output);
-					}
-
+					miniByteBuffer[1] = getNextByte();
+					miniByteBuffer[0] = getNextByte();
+					short s = ByteBuffer.wrap(miniByteBuffer).getShort();
+					short v = (short) Math.abs(s);
+					for(VolumeMaker maker : makers) maker.nextSample(v);
 				}
 			}
 		}).start();
 	}
 
-	public Double getVolume(int index){
+	public Double getVolume(int zoom, int index){
+		Double[] volume = data[zoom];
 		if(volume == null || index >= volume.length){
 			return null;
 		}
 		return volume[index];
+	}
+
+	public int[] getZoomLevels(){
+		return zoomLevels;
 	}
 
 	public void setOnVolumeReadListener(OnVolumeReadListener listener){
@@ -81,6 +79,42 @@ public class VolumeReader {
 			return chunk[chunkCursor++];
 		}else{
 			return 0;
+		}
+	}
+
+	private class VolumeMaker{
+
+		final int pcmFramesPerVolumeFrame;
+		final Double[] volume;
+		final int index;
+		double max;
+		int pcmcursor;
+		int volumeCursor;
+
+		public VolumeMaker(int index, int pcmFramesPerVolumeFrame, Double[] volume){
+			this.index = index;
+			this.pcmFramesPerVolumeFrame = pcmFramesPerVolumeFrame;
+			this.volume = volume;
+		}
+
+		public void nextSample(Short sample){
+
+			if(pcmcursor >= pcmFramesPerVolumeFrame){
+				double output = max / (double) Short.MAX_VALUE;
+				pcmcursor = 0;
+
+				volume[volumeCursor] = output;
+				if(listener != null){
+					listener.onNewFrame(index, volumeCursor++, volume.length, output);
+				}
+				max = 0;
+			}else{
+				if(sample > max){
+					max = sample;
+				}
+				pcmcursor++;
+			}
+
 		}
 	}
 }
