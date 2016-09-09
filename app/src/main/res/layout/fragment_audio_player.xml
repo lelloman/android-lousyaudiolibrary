@@ -30,13 +30,11 @@
             />
     </LinearLayout>
 
-    <SeekBar
-        android:id="@+id/seekbarTime"
+    <com.lelloman.lousyaudiolibrary.view.VolumeView
+        android:id="@+id/volumeView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:max="10000"
-        />
+        android:layout_height="100dp"/>
+
     <SeekBar
         android:id="@+id/seekbarSpeed"
         android:layout_width="match_parent"
@@ -45,8 +43,4 @@
         android:max="10000"
         />
 
-    <com.lelloman.lousyaudiolibrary.view.VolumeView
-        android:id="@+id/volumeView"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"/>
 </LinearLayout>

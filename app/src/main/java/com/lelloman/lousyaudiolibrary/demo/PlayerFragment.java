@@ -16,7 +16,7 @@ import com.lelloman.lousyaudiolibrary.reader.AudioReader;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
 
 
-public class PlayerFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class PlayerFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, VolumeView.OnClickListener {
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
@@ -25,7 +25,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 	private Button btnPause;
 	private Button btnPlay;
 	private ToggleButton btnSlow;
-	private SeekBar seekBarTime;
 	private SeekBar seekBarSpeed;
 	private VolumeView volumeView;
 
@@ -49,8 +48,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 		@Override
 		public void onPlaybackUpdate(AudioPlayer player, double percent, long timeMs) {
-			if (seekBarTime != null)
-				seekBarTime.setProgress((int) (percent * 10000));
+
+			if (volumeView != null)
+				volumeView.setCursor(percent);
 
 		}
 
@@ -94,14 +94,13 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 		View rootView = inflater.inflate(R.layout.fragment_audio_player, container, false);
 
-		seekBarTime = (SeekBar) rootView.findViewById(R.id.seekbarTime);
 		btnSlow = (ToggleButton) rootView.findViewById(R.id.btnSlow);
 		btnPlay = (Button) rootView.findViewById(R.id.btnPlay);
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
 		volumeView = (VolumeView) rootView.findViewById(R.id.volumeView);
 
-		if(resId != -1){
+		if (resId != -1) {
 			try {
 				volumeView.setAudioReader(new AudioReader(getActivity(), resId));
 
@@ -112,9 +111,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 		btnPlay.setOnClickListener(this);
 		btnPause.setOnClickListener(this);
-		seekBarTime.setOnSeekBarChangeListener(this);
 		btnSlow.setOnClickListener(this);
 		seekBarSpeed.setOnSeekBarChangeListener(this);
+		volumeView.setOnClickListener((VolumeView.OnClickListener) this);
 
 		return rootView;
 	}
@@ -124,7 +123,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 	public void onDestroyView() {
 		super.onDestroyView();
 
-		seekBarTime = null;
 		btnSlow = null;
 		btnPlay = null;
 		btnPause = null;
@@ -160,10 +158,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-		if (seekBar == seekBarTime) {
-			if (fromUser)
-				player.seek(progress / 10000.);
-		}
 	}
 
 	@Override
@@ -173,11 +167,13 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Se
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		if( seekBar == seekBarSpeed){
 
-			player.setSlowScale(seekBar.getProgress() / 10000. * .6 + .4);
-			btnSlow.setChecked(player.isSlow());
-		}
+		player.setSlowScale(seekBar.getProgress() / 10000. * .6 + .4);
+		btnSlow.setChecked(player.isSlow());
 	}
 
+	@Override
+	public void onClick(VolumeView volumeView, double percentX) {
+		player.seek(percentX);
+	}
 }

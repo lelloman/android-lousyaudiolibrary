@@ -8,20 +8,29 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 
 
-public class VolumeView extends View {
+public class VolumeView extends View implements View.OnTouchListener{
+
+	public interface OnClickListener {
+		void onClick(VolumeView volumeView, double percentX);
+	}
 
 	private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
 	private IAudioReader audioReader;
 	private Bitmap bitmap;
 	private Rect srcRect, dstRect;
 	private Thread bitmapDrawer;
+
+	private double cursor = 0;
+	private OnClickListener onClickListener;
 
 	public VolumeView(Context context) {
 		this(context, null);
@@ -32,7 +41,16 @@ public class VolumeView extends View {
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(1);
+
+		cursorPaint.setColor(Color.YELLOW);
+		cursorPaint.setStyle(Paint.Style.STROKE);
+		cursorPaint.setStrokeWidth(2*getResources().getDisplayMetrics().density);
 		dstRect = new Rect(0, 0, 1, 1);
+		setOnTouchListener(this);
+	}
+
+	public void setOnClickListener(OnClickListener l) {
+		this.onClickListener = l;
 	}
 
 	@Override
@@ -56,13 +74,10 @@ public class VolumeView extends View {
 			return;
 		}
 
-		final Bitmap holder = bitmap;
-		final Canvas canvas = new Canvas(holder);
-		bitmap = null;
-
-
+		final Canvas canvas = new Canvas(bitmap);
+		final int K = 4;
 		double framesCount = (audioReader.getDurationMs() / 1000.) * audioReader.getSampleRate();
-		final int pcmFramesPerVolumeFrame = (int) (framesCount / width);
+		final int pcmFramesPerVolumeFrame = (int) (framesCount / width) * K;
 		Log.d("VolumeView", String.format("frameCount = %.2f, framesPerVolum = %s", framesCount, pcmFramesPerVolumeFrame));
 		final int height = getHeight();
 		final int minHeight = (int) (height * .05f);
@@ -74,7 +89,7 @@ public class VolumeView extends View {
 			public void run() {
 				VolumeReader volumeReader = new VolumeReader(audioReader, pcmFramesPerVolumeFrame);
 				Log.d(VolumeView.class.getSimpleName(), "start bitmap drawer");
-				for (int i = 0; i < width; i++) {
+				for (int i = 0; i < width; i += K) {
 					Double v = volumeReader.nextFrame();
 					if (v == null) {
 						break;
@@ -82,10 +97,11 @@ public class VolumeView extends View {
 					int barLength = minHeight + (int) (v * maxHeight);
 					int d = (height - barLength) / 2;
 					canvas.drawLine(i, height - d, i, d, paint);
+					if(i % 20 == 0){
+						postInvalidate();
+					}
 				}
-				bitmap = holder;
 				Log.d(VolumeView.class.getSimpleName(), "end bitmap drawer");
-				postInvalidate();
 			}
 		});
 
@@ -99,16 +115,44 @@ public class VolumeView extends View {
 		}
 	}
 
+	public void setCursor(double d){
+		this.cursor = d;
+		postInvalidate();
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		canvas.drawColor(0xff888888);
 
-		if (bitmap == null) {
-			return;
+		int width = canvas.getWidth();
+		int height = canvas.getHeight();
+
+		if (bitmap != null) {
+			dstRect.set(0, 0, width, height);
+			canvas.drawBitmap(bitmap, srcRect, dstRect, null);
 		}
 
-		dstRect.set(0, 0, canvas.getWidth(), canvas.getHeight());
-		canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+		int x = (int) (width * cursor);
+		canvas.drawLine(x,height,x,0,cursorPaint);
+
+	}
+
+	@Override
+	public boolean onTouch(View view, MotionEvent motionEvent) {
+
+		int action = motionEvent.getAction();
+
+		switch (action){
+			case MotionEvent.ACTION_DOWN:
+				if(onClickListener != null) {
+					double x = motionEvent.getX() / getWidth();
+					onClickListener.onClick(this, x);
+					return true;
+				}
+				break;
+		}
+
+		return false;
 	}
 }
