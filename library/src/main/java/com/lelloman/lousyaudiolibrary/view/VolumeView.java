@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -28,6 +29,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	private Bitmap bitmap;
 	private Canvas canvas;
 	private Rect srcRect, dstRect;
+	private Path framePath = new Path();
 
 	private double cursor = 0;
 	private OnClickListener onClickListener;
@@ -43,8 +45,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	public VolumeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		paint.setColor(Color.BLACK);
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeWidth(1);
+		paint.setStyle(Paint.Style.FILL_AND_STROKE);
 
 		cursorPaint.setColor(Color.YELLOW);
 		cursorPaint.setStyle(Paint.Style.STROKE);
@@ -108,12 +109,13 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 
 		synchronized (BITMAP_LOCK){
 			int i = 0;
-			Double d = volumeReader.getVolume(zoomLevel, i);
-			double dx = getWidth() / (double) volumeReader.getVolumeLength(zoomLevel);
-			while(d != null){
-				double x = dx * i++;
-				drawFrame((int) x, d);
-				d = volumeReader.getVolume(zoomLevel, i);
+			Double value = volumeReader.getVolume(zoomLevel, i);
+			float dx = getWidth() / (float) volumeReader.getVolumeLength(zoomLevel);
+
+			while(value != null){
+				drawFrame(i++, dx, value);
+				value = volumeReader.getVolume(zoomLevel, i);
+
 			}
 		}
 	}
@@ -123,18 +125,41 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 
 		if(canvas == null || zoomLevel != this.zoomLevel) return;
 
-		double dx = getWidth() / (double) volumeReader.getVolumeLength(zoomLevel);
-		drawFrame((int) (frameIndex*dx), value);
+		float dx = getWidth() / (float) volumeReader.getVolumeLength(zoomLevel);
+		drawFrame(frameIndex, dx, value);
 
 		postInvalidate();
 	}
 
-	private void drawFrame(int x, double value){
+	private void drawFrame(int i1, float dx, double value1){
+		int i0 = i1 -1;
+		if(i0 < 0) return;
+
+		Double value0 = volumeReader.getVolume(zoomLevel, i0);
+		if(value0 == null)  return;
+
 		int height = getHeight();
 
-		int barLength = minHeight + (int) (value * maxHeight);
-		int d = (height - barLength) / 2;
-		canvas.drawLine(x, height - d, x, d, paint);
+		int barLength0 = minHeight + (int) (value0 * maxHeight);
+		int y0up = (height - barLength0) / 2;
+		int y0down = height - y0up;
+
+		int barLength1 = minHeight + (int) (value1 * maxHeight);
+		int y1up = (height - barLength1) / 2;
+		int y1down = height - y1up;
+
+		float x0 = dx * i0;
+		float x1 = dx * i1;
+
+		framePath.reset();
+		framePath.moveTo(x0, y0up);
+		framePath.lineTo(x1, y1up);
+		framePath.lineTo(x1, y1down);
+		framePath.lineTo(x0,y0down);
+		framePath.lineTo(x0, y0up);
+
+		canvas.drawPath(framePath, paint);
+		//canvas.drawLine(x, height - d, x, d, paint);
 	}
 
 	public void setCursor(double d){

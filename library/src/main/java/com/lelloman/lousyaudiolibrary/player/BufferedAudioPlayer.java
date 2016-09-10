@@ -9,7 +9,7 @@ import java.util.List;
 
 public class BufferedAudioPlayer extends AudioPlayer {
 
-	public static int MIN_BUFFER_SIZE = 10;
+	public static int MIN_BUFFER_SIZE = 4;
 
 	protected List<byte[]> buffer = Collections.synchronizedList(new ArrayList<byte[]>());
 	private int minBufferSize = MIN_BUFFER_SIZE;
