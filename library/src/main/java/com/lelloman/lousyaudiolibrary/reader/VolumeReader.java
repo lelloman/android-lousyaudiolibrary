@@ -29,7 +29,8 @@ public class VolumeReader {
 		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
 		for(int i = 0; i< zoomLevels.length; i++){
 			data[i] = new Double[zoomLevels[i]];
-			makers[i] = new VolumeMaker(i, zoomLevels[i], data[i]);
+			int pcmFramesPerVolume = (int) (totalFrames / zoomLevels[i]);
+			makers[i] = new VolumeMaker(i, pcmFramesPerVolume, data[i]);
 		}
 
 		new Thread(new Runnable() {

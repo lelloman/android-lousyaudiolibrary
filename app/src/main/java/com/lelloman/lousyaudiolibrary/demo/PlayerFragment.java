@@ -85,10 +85,14 @@ public class PlayerFragment extends Fragment implements
 				player.start();
 				int framesCount = (int) audioReader.getDurationFrames();
 				int width = getResources().getDisplayMetrics().widthPixels;
+				int height = getResources().getDisplayMetrics().heightPixels;
 
-				final int pcmFramesPerVolumeFrame = (int) (framesCount / width) * VolumeView.K;
-				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), pcmFramesPerVolumeFrame);
-			}else{
+				int[] intervals = new int[]{
+						width / VolumeView.K,//(framesCount / width) * VolumeView.K,
+						height/ VolumeView.K//(framesCount / height) * VolumeView.K
+				};
+				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
+			} else {
 				throw new Exception("mboh");
 			}
 		} catch (Exception e) {
@@ -107,7 +111,7 @@ public class PlayerFragment extends Fragment implements
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
 		volumeView = (VolumeView) rootView.findViewById(R.id.volumeView);
-		if(volumeReader != null){
+		if (volumeReader != null) {
 			volumeView.setVolumeReader(volumeReader);
 		}
 
@@ -177,7 +181,7 @@ public class PlayerFragment extends Fragment implements
 	@Override
 	public void onClick(VolumeView volumeView, double percentX) {
 		player.seek(percentX);
-		if(volumeView != null){
+		if (volumeView != null) {
 			volumeView.setCursor(percentX);
 		}
 	}

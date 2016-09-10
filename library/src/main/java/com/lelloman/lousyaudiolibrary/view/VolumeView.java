@@ -7,10 +7,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
+
+import java.util.Arrays;
 
 
 public class VolumeView extends View implements View.OnTouchListener, VolumeReader.OnVolumeReadListener {
@@ -91,17 +94,17 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 
 	private void selectZoomLevel(int width){
 		if(volumeReader == null) return;
+		width /= K;
 
 		int[] levels = volumeReader.getZoomLevels();
 		zoomLevel = levels.length-1;
 
 		for(int i = 0; i< levels.length; i++){
-			if(levels[i] > width){
+			if(levels[i] >= width){
 				this.zoomLevel = i;
 				break;
 			}
 		}
-
 	}
 
 	private void drawBitmap() {
