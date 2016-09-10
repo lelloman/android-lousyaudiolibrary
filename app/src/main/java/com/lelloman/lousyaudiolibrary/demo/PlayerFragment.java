@@ -88,8 +88,8 @@ public class PlayerFragment extends Fragment implements
 				int height = getResources().getDisplayMetrics().heightPixels;
 
 				int[] intervals = new int[]{
-						width / VolumeView.K,//(framesCount / width) * VolumeView.K,
-						height/ VolumeView.K//(framesCount / height) * VolumeView.K
+						(int) ((width / VolumeView.K)* 1.2),//(framesCount / width) * VolumeView.K,
+						(int) ((height/ VolumeView.K) * 1.2)//(framesCount / height) * VolumeView.K
 				};
 				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
 			} else {

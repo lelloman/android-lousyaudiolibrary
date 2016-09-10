@@ -49,6 +49,10 @@ public class VolumeReader {
 		}).start();
 	}
 
+	public int getVolumeLength(int zoomLevel) {
+		return data[zoomLevel].length;
+	}
+
 	public Double getVolume(int zoom, int index){
 		Double[] volume = data[zoom];
 		if(volume == null || index >= volume.length){

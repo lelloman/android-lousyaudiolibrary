@@ -7,13 +7,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
-
-import java.util.Arrays;
 
 
 public class VolumeView extends View implements View.OnTouchListener, VolumeReader.OnVolumeReadListener {
@@ -112,8 +109,10 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 		synchronized (BITMAP_LOCK){
 			int i = 0;
 			Double d = volumeReader.getVolume(zoomLevel, i);
+			double dx = getWidth() / (double) volumeReader.getVolumeLength(zoomLevel);
 			while(d != null){
-				drawFrame(i++, d);
+				double x = dx * i++;
+				drawFrame((int) x, d);
 				d = volumeReader.getVolume(zoomLevel, i);
 			}
 		}
@@ -124,17 +123,17 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 
 		if(canvas == null || zoomLevel != this.zoomLevel) return;
 
-		drawFrame(frameIndex, value);
+		double dx = getWidth() / (double) volumeReader.getVolumeLength(zoomLevel);
+		drawFrame((int) (frameIndex*dx), value);
 
 		postInvalidate();
 	}
 
-	private void drawFrame(int frameIndex, double value){
+	private void drawFrame(int x, double value){
 		int height = getHeight();
 
 		int barLength = minHeight + (int) (value * maxHeight);
 		int d = (height - barLength) / 2;
-		int x = frameIndex*K;
 		canvas.drawLine(x, height - d, x, d, paint);
 	}
 
