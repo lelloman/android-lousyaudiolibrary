@@ -21,6 +21,10 @@ public class ZoomableVolumeView extends VolumeView {
 	private boolean hasSecondCursor;
 	private ZoomableViewListener listener;
 
+	private boolean hasWindow;
+	private float windowStart;
+	private float windowEnd;
+
 	public ZoomableVolumeView(Context context) {
 		this(context, null);
 	}
@@ -64,7 +68,15 @@ public class ZoomableVolumeView extends VolumeView {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
+
+		if(hasWindow){
+			canvas.save();
+			canvas.scale(1,.2f,getWidth()*.5f,0);
+			super.onDraw(canvas);
+			canvas.restore();
+		}else{
+			super.onDraw(canvas);
+		}
 
 		if (dragging || hasSecondCursor) {
 			canvas.drawLine(draggingX, 0, draggingX, canvas.getHeight(), draggingPaint);
@@ -81,6 +93,14 @@ public class ZoomableVolumeView extends VolumeView {
 	protected void onLongPress(MotionEvent event) {
 		dragging = true;
 		draggingX = event.getX();
+		postInvalidate();
+	}
+
+	public void setWindow(float windowStart, float windowEnd){
+		hasSecondCursor = false;
+		hasWindow = true;
+		this.windowStart = windowStart;
+		this.windowEnd = windowEnd;
 		postInvalidate();
 	}
 }

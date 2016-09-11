@@ -32,8 +32,12 @@ public class PlayerFragment extends Fragment implements
 	private Button btnPlay;
 	private ToggleButton btnSlow;
 	private SeekBar seekBarSpeed;
-	private VolumeView volumeView;
+	private ZoomableVolumeView volumeView;
 	private VolumeReader volumeReader;
+
+	private boolean hasSubWindow;
+	private double subWindowStart;
+	private double subWindowEnd;
 
 	private int resId;
 
@@ -58,6 +62,12 @@ public class PlayerFragment extends Fragment implements
 
 			if (volumeView != null)
 				volumeView.setCursor((float) percent);
+
+			if(hasSubWindow){
+				if(percent > subWindowEnd){
+					player.seek(subWindowStart);
+				}
+			}
 
 		}
 
@@ -111,7 +121,7 @@ public class PlayerFragment extends Fragment implements
 		btnPlay = (Button) rootView.findViewById(R.id.btnPlay);
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
-		volumeView = (VolumeView) rootView.findViewById(R.id.volumeView);
+		volumeView = (ZoomableVolumeView) rootView.findViewById(R.id.volumeView);
 		if (volumeReader != null) {
 			volumeView.setVolumeReader(volumeReader);
 		}
@@ -120,7 +130,7 @@ public class PlayerFragment extends Fragment implements
 		btnPause.setOnClickListener(this);
 		btnSlow.setOnClickListener(this);
 		seekBarSpeed.setOnSeekBarChangeListener(this);
-		volumeView.setVolumeViewListener((VolumeView.VolumeViewListener) this);
+		volumeView.setVolumeViewListener(this);
 
 		return rootView;
 	}
@@ -190,5 +200,13 @@ public class PlayerFragment extends Fragment implements
 	@Override
 	public void onWindowSelected(ZoomableVolumeView view, float start, float end) {
 		Toast.makeText(getActivity(), String.format("%.2f - %.2f", start, end), Toast.LENGTH_SHORT).show();
+
+		hasSubWindow = true;
+		subWindowStart = start;
+		subWindowEnd = end;
+
+		if(volumeView != null){
+			volumeView.setWindow(start, end);
+		}
 	}
 }

@@ -194,6 +194,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		return true;
 	}
 
+	protected Rect getDstRect(){
+		return dstRect;
+	}
 
 	public float getCursor(){
 		return cursor;
