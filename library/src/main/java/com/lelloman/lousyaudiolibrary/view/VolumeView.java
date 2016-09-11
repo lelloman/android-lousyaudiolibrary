@@ -23,7 +23,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	public static final int K = 4;
 	private static final Object BITMAP_LOCK = 0xb00b5;
 
-	private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint paint = new Paint();
 	private Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
 	private Bitmap bitmap;
@@ -45,7 +45,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	public VolumeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		paint.setColor(Color.BLACK);
-		paint.setStyle(Paint.Style.FILL_AND_STROKE);
+		paint.setStyle(Paint.Style.STROKE);
 
 		cursorPaint.setColor(Color.YELLOW);
 		cursorPaint.setStyle(Paint.Style.STROKE);
@@ -57,7 +57,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	public void setVolumeReader(VolumeReader volumeReader){
 		this.volumeReader = volumeReader;
 		volumeReader.setOnVolumeReadListener(this);
-		selectZoomLevel(getWidth());
+		selectZoomLevel(getWidth(), getHeight());
 		if(bitmap != null){
 			drawBitmap();
 		}
@@ -77,21 +77,13 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 		minHeight = (int) (height * .05f);
 		maxHeight = (int) (height * .95f);
 
-		synchronized (BITMAP_LOCK) {
-			if (bitmap != null) {
-				bitmap.recycle();
-			}
 
-			bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-			canvas = new Canvas(bitmap);
-			srcRect = new Rect(0, 0, w, h);
-		}
-		selectZoomLevel(w);
+		selectZoomLevel(w, h);
 		drawBitmap();
 	}
 
-	private void selectZoomLevel(int width){
-		if(volumeReader == null) return;
+	private void selectZoomLevel(int width, int height){
+		if(volumeReader == null || width < 1 || height < 1) return;
 		width /= K;
 
 		int[] levels = volumeReader.getZoomLevels();
@@ -102,6 +94,16 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 				this.zoomLevel = i;
 				break;
 			}
+		}
+
+		synchronized (BITMAP_LOCK) {
+			if (bitmap != null) {
+				bitmap.recycle();
+			}
+
+			bitmap = Bitmap.createBitmap(levels[zoomLevel], height, Bitmap.Config.ARGB_8888);
+			canvas = new Canvas(bitmap);
+			srcRect = new Rect(0, 0, levels[zoomLevel], height);
 		}
 	}
 
@@ -132,33 +134,37 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	}
 
 	private void drawFrame(int i1, float dx, double value1){
-		int i0 = i1 -1;
-		if(i0 < 0) return;
+		synchronized (BITMAP_LOCK) {
+			/*int i0 = i1 - 1;
+			if (i0 < 0) return;*/
 
-		Double value0 = volumeReader.getVolume(zoomLevel, i0);
-		if(value0 == null)  return;
+			Double value0 = volumeReader.getVolume(zoomLevel, i1);
+			if (value0 == null) return;
 
-		int height = getHeight();
+			int height = getHeight();
 
-		int barLength0 = minHeight + (int) (value0 * maxHeight);
-		int y0up = (height - barLength0) / 2;
-		int y0down = height - y0up;
+			int barLength0 = minHeight + (int) (value0 * maxHeight);
+			int y0up = (height - barLength0) / 2;
+			int y0down = height - y0up;
 
-		int barLength1 = minHeight + (int) (value1 * maxHeight);
-		int y1up = (height - barLength1) / 2;
-		int y1down = height - y1up;
+//			int barLength1 = minHeight + (int) (value1 * maxHeight);
+//			int y1up = (height - barLength1) / 2;
+//			int y1down = height - y1up;
 
-		float x0 = dx * i0;
-		float x1 = dx * i1;
+			float x0 =/* dx * */i1;
+//			float x1 =/* dx * */i1;
 
-		framePath.reset();
-		framePath.moveTo(x0, y0up);
-		framePath.lineTo(x1, y1up);
-		framePath.lineTo(x1, y1down);
-		framePath.lineTo(x0,y0down);
-		framePath.lineTo(x0, y0up);
+		/*	framePath.reset();
+			framePath.moveTo(x0, y0up);
+			framePath.lineTo(x1, y1up);
+			framePath.lineTo(x1, y1down);
+			framePath.lineTo(x0, y0down);
+			framePath.lineTo(x0, y0up);
 
-		canvas.drawPath(framePath, paint);
+			canvas.drawPath(framePath, paint);
+		*/
+			canvas.drawLine(x0, y0up, x0, y0down, paint);
+		}
 		//canvas.drawLine(x, height - d, x, d, paint);
 	}
 
@@ -175,9 +181,11 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 		int width = canvas.getWidth();
 		int height = canvas.getHeight();
 
-		if (bitmap != null) {
-			dstRect.set(0, 0, width, height);
-			canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+		synchronized (BITMAP_LOCK) {
+			if (bitmap != null) {
+				dstRect.set(0, 0, width, height);
+				canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+			}
 		}
 
 		int x = (int) (width * cursor);
