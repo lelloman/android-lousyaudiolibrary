@@ -75,7 +75,7 @@ public class VolumeReader {
 			chunkCursor = 0;
 		}
 		int i = 0;
-		while (i < 5 && chunk == null) {
+		while (i < 5 && chunk == null || chunk.length < 2) {
 			chunk = audioReader.nextChunk();
 			chunkCursor = 0;
 			i++;
@@ -105,9 +105,10 @@ public class VolumeReader {
 		public void nextSample(Short sample){
 
 			if(pcmcursor >= pcmFramesPerVolumeFrame){
+				if(volumeCursor >= volume.length) return;
+
 				double output = max / (double) Short.MAX_VALUE;
 				pcmcursor = 0;
-
 				volume[volumeCursor] = output;
 				if(listener != null){
 					listener.onNewFrame(index, volumeCursor++, volume.length, output);

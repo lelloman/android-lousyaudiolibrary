@@ -79,7 +79,7 @@ public class PlayerFragment extends Fragment implements
 		player = new SlowAudioPlayer(playerListener);
 
 		try {
-			AudioReader audioReader = new AudioReader(getActivity(), resId);
+			AudioReader audioReader = new AudioReader(getActivity(), R.raw.paintmono2m);
 
 			if (player.init(audioReader)) {
 				player.start();
@@ -90,7 +90,7 @@ public class PlayerFragment extends Fragment implements
 						(width / VolumeView.K),
 						(height/ VolumeView.K)
 				};
-				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
+				volumeReader = new VolumeReader(new AudioReader(getActivity(), R.raw.paintmono2m), intervals);
 			} else {
 				throw new Exception("mboh");
 			}

@@ -14,7 +14,7 @@ import android.view.View;
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 
 
-public class VolumeView extends View implements View.OnTouchListener, VolumeReader.OnVolumeReadListener {
+public class VolumeView extends View implements VolumeReader.OnVolumeReadListener {
 
 	public interface OnClickListener {
 		void onClick(VolumeView volumeView, double percentX);
@@ -51,7 +51,6 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 		cursorPaint.setStyle(Paint.Style.STROKE);
 		cursorPaint.setStrokeWidth(2*getResources().getDisplayMetrics().density);
 		dstRect = new Rect(0, 0, 1, 1);
-		setOnTouchListener(this);
 	}
 
 	public void setVolumeReader(VolumeReader volumeReader){
@@ -108,6 +107,7 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 	}
 
 	private void drawBitmap() {
+		if(volumeReader == null) return;
 
 		synchronized (BITMAP_LOCK){
 			int i = 0;
@@ -193,19 +193,22 @@ public class VolumeView extends View implements View.OnTouchListener, VolumeRead
 
 	}
 
+	protected void onClick(double clickX){
+		if(onClickListener != null){
+			double x = clickX / getWidth();
+			onClickListener.onClick(this, x);
+		}
+	}
+
 	@Override
-	public boolean onTouch(View view, MotionEvent motionEvent) {
+	public boolean onTouchEvent(MotionEvent motionEvent) {
 
 		int action = motionEvent.getAction();
 
 		switch (action){
 			case MotionEvent.ACTION_DOWN:
-				if(onClickListener != null) {
-					double x = motionEvent.getX() / getWidth();
-					onClickListener.onClick(this, x);
-					return true;
-				}
-				break;
+				onClick(motionEvent.getX());
+				return true;
 		}
 
 		return false;

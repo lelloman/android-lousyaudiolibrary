@@ -26,7 +26,8 @@ public class BufferManager {
 
 	private void initBuffer() {
 
-		while (chunk == null)
+		int n=0;
+		while ( (chunk == null || chunk.length < 1) && n++ < 10)
 			chunk = reader.nextChunkDouble();
 
 		for (int i = stepSize; i < buffer.length; i++) {
