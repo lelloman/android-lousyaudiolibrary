@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
@@ -15,12 +16,13 @@ import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
 import com.lelloman.lousyaudiolibrary.reader.AudioReader;
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
+import com.lelloman.lousyaudiolibrary.view.ZoomableVolumeView;
 
 
 public class PlayerFragment extends Fragment implements
 		View.OnClickListener,
 		SeekBar.OnSeekBarChangeListener,
-		VolumeView.OnClickListener {
+		ZoomableVolumeView.ZoomableViewListener{
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
@@ -55,7 +57,7 @@ public class PlayerFragment extends Fragment implements
 		public void onPlaybackUpdate(AudioPlayer player, double percent, long timeMs) {
 
 			if (volumeView != null)
-				volumeView.setCursor(percent);
+				volumeView.setCursor((float) percent);
 
 		}
 
@@ -178,10 +180,15 @@ public class PlayerFragment extends Fragment implements
 	}
 
 	@Override
-	public void onClick(VolumeView volumeView, double percentX) {
+	public void onClick(VolumeView volumeView, float percentX) {
 		player.seek(percentX);
 		if (volumeView != null) {
 			volumeView.setCursor(percentX);
 		}
+	}
+
+	@Override
+	public void onWindowSelected(ZoomableVolumeView view, float start, float end) {
+		Toast.makeText(getActivity(), String.format("%.2f - %.2f", start, end), Toast.LENGTH_SHORT).show();
 	}
 }

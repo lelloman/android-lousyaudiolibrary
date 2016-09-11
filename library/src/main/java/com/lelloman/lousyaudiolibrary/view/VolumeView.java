@@ -17,7 +17,7 @@ import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 public class VolumeView extends View implements VolumeReader.OnVolumeReadListener {
 
 	public interface OnClickListener {
-		void onClick(VolumeView volumeView, double percentX);
+		void onClick(VolumeView volumeView, float percentX);
 	}
 
 	public static final int K = 4;
@@ -31,7 +31,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	private Rect srcRect, dstRect;
 	private Path framePath = new Path();
 
-	private double cursor = 0;
+	private float cursor = 0;
 	private OnClickListener onClickListener;
 	private VolumeReader volumeReader;
 
@@ -112,10 +112,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		synchronized (BITMAP_LOCK){
 			int i = 0;
 			Double value = volumeReader.getVolume(zoomLevel, i);
-			float dx = getWidth() / (float) volumeReader.getVolumeLength(zoomLevel);
 
 			while(value != null){
-				drawFrame(i++, dx, value);
+				drawFrame(i++, value);
 				value = volumeReader.getVolume(zoomLevel, i);
 
 			}
@@ -127,18 +126,14 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 		if(canvas == null || zoomLevel != this.zoomLevel) return;
 
-		float dx = getWidth() / (float) volumeReader.getVolumeLength(zoomLevel);
-		drawFrame(frameIndex, dx, value);
+		drawFrame(frameIndex, value);
 
 		postInvalidate();
 	}
 
-	private void drawFrame(int i1, float dx, double value1){
+	private void drawFrame(int i1, Double value0){
 		synchronized (BITMAP_LOCK) {
-			/*int i0 = i1 - 1;
-			if (i0 < 0) return;*/
 
-			Double value0 = volumeReader.getVolume(zoomLevel, i1);
 			if (value0 == null) return;
 
 			int height = getHeight();
@@ -147,28 +142,13 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 			int y0up = (height - barLength0) / 2;
 			int y0down = height - y0up;
 
-//			int barLength1 = minHeight + (int) (value1 * maxHeight);
-//			int y1up = (height - barLength1) / 2;
-//			int y1down = height - y1up;
+			float x0 = i1;
 
-			float x0 =/* dx * */i1;
-//			float x1 =/* dx * */i1;
-
-		/*	framePath.reset();
-			framePath.moveTo(x0, y0up);
-			framePath.lineTo(x1, y1up);
-			framePath.lineTo(x1, y1down);
-			framePath.lineTo(x0, y0down);
-			framePath.lineTo(x0, y0up);
-
-			canvas.drawPath(framePath, paint);
-		*/
 			canvas.drawLine(x0, y0up, x0, y0down, paint);
 		}
-		//canvas.drawLine(x, height - d, x, d, paint);
 	}
 
-	public void setCursor(double d){
+	public void setCursor(float d){
 		this.cursor = d;
 		postInvalidate();
 	}
@@ -193,9 +173,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	}
 
-	protected void onClick(double clickX){
+	protected void onClick(float clickX){
 		if(onClickListener != null){
-			double x = clickX / getWidth();
+			float x = clickX / getWidth();
 			onClickListener.onClick(this, x);
 		}
 	}
@@ -212,5 +192,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 
 		return false;
+	}
+
+	public float getCursor(){
+		return cursor;
 	}
 }
