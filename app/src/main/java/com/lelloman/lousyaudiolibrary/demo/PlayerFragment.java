@@ -120,7 +120,7 @@ public class PlayerFragment extends Fragment implements
 		btnPause.setOnClickListener(this);
 		btnSlow.setOnClickListener(this);
 		seekBarSpeed.setOnSeekBarChangeListener(this);
-		volumeView.setOnClickListener((VolumeView.OnClickListener) this);
+		volumeView.setVolumeViewListener((VolumeView.VolumeViewListener) this);
 
 		return rootView;
 	}
@@ -180,7 +180,7 @@ public class PlayerFragment extends Fragment implements
 	}
 
 	@Override
-	public void onClick(VolumeView volumeView, float percentX) {
+	public void onDoubleTap(VolumeView volumeView, float percentX) {
 		player.seek(percentX);
 		if (volumeView != null) {
 			volumeView.setCursor(percentX);

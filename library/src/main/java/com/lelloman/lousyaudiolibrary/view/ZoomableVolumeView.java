@@ -5,17 +5,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 
 public class ZoomableVolumeView extends VolumeView {
 
-	public interface ZoomableViewListener extends VolumeView.OnClickListener {
+	public interface ZoomableViewListener extends VolumeViewListener {
 		void onWindowSelected(ZoomableVolumeView volumeView, float start, float end);
 	}
 
-	private GestureDetector longTapDetector;
 	private boolean dragging;
 	private float draggingX;
 	private Paint draggingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -29,15 +27,14 @@ public class ZoomableVolumeView extends VolumeView {
 
 	public ZoomableVolumeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		longTapDetector = new GestureDetector(context, new LongPressListener());
 		draggingPaint.setStyle(Paint.Style.STROKE);
 		draggingPaint.setColor(Color.YELLOW);
 		draggingPaint.setAlpha(155);
 	}
 
 	@Override
-	public void setOnClickListener(OnClickListener l) {
-		super.setOnClickListener(l);
+	public void setVolumeViewListener(VolumeViewListener l) {
+		super.setVolumeViewListener(l);
 		if (l instanceof ZoomableViewListener) {
 			listener = (ZoomableViewListener) l;
 		}
@@ -45,7 +42,7 @@ public class ZoomableVolumeView extends VolumeView {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-		longTapDetector.onTouchEvent(ev);
+		super.onTouchEvent(ev);
 
 		int action = ev.getAction();
 
@@ -74,20 +71,16 @@ public class ZoomableVolumeView extends VolumeView {
 		}
 	}
 
-	private class LongPressListener extends GestureDetector.SimpleOnGestureListener {
+	@Override
+	protected void onDoubleTap(MotionEvent event) {
+		super.onDoubleTap(event);
+		dragging = false;
+	}
 
-		@Override
-		public boolean onDoubleTap(MotionEvent event) {
-			ZoomableVolumeView.super.onClick(event.getX());
-			dragging = false;
-			return true;
-		}
-
-		@Override
-		public void onLongPress(MotionEvent event) {
-			dragging = true;
-			draggingX = event.getX();
-			postInvalidate();
-		}
+	@Override
+	protected void onLongPress(MotionEvent event) {
+		dragging = true;
+		draggingX = event.getX();
+		postInvalidate();
 	}
 }

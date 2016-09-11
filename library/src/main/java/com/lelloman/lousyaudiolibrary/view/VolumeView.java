@@ -5,9 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -16,8 +16,8 @@ import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 
 public class VolumeView extends View implements VolumeReader.OnVolumeReadListener {
 
-	public interface OnClickListener {
-		void onClick(VolumeView volumeView, float percentX);
+	public interface VolumeViewListener {
+		void onDoubleTap(VolumeView volumeView, float percentX);
 	}
 
 	public static final int K = 4;
@@ -29,14 +29,14 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	private Bitmap bitmap;
 	private Canvas canvas;
 	private Rect srcRect, dstRect;
-	private Path framePath = new Path();
 
 	private float cursor = 0;
-	private OnClickListener onClickListener;
+	private VolumeViewListener volumeViewListener;
 	private VolumeReader volumeReader;
 
 	private int minHeight, maxHeight;
 	private int zoomLevel;
+	private GestureDetector gestureDetector;
 
 	public VolumeView(Context context) {
 		this(context, null);
@@ -51,6 +51,8 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		cursorPaint.setStyle(Paint.Style.STROKE);
 		cursorPaint.setStrokeWidth(2*getResources().getDisplayMetrics().density);
 		dstRect = new Rect(0, 0, 1, 1);
+
+		gestureDetector = new GestureDetector(context, new  GestureDetecotr());
 	}
 
 	public void setVolumeReader(VolumeReader volumeReader){
@@ -62,8 +64,8 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 	}
 
-	public void setOnClickListener(OnClickListener l) {
-		this.onClickListener = l;
+	public void setVolumeViewListener(VolumeViewListener l) {
+		this.volumeViewListener = l;
 	}
 
 	@Override
@@ -173,28 +175,41 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	}
 
-	protected void onClick(float clickX){
-		if(onClickListener != null){
-			float x = clickX / getWidth();
-			onClickListener.onClick(this, x);
+	protected void onDoubleTap(MotionEvent event){
+		if(volumeViewListener != null){
+			float x = event.getX() / getWidth();
+			volumeViewListener.onDoubleTap(this, x);
 		}
+	}
+
+	protected void onLongPress(MotionEvent event){
+
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent motionEvent) {
 
-		int action = motionEvent.getAction();
+		gestureDetector.onTouchEvent(motionEvent);
 
-		switch (action){
-			case MotionEvent.ACTION_DOWN:
-				onClick(motionEvent.getX());
-				return true;
-		}
-
-		return false;
+		return true;
 	}
+
 
 	public float getCursor(){
 		return cursor;
+	}
+
+	private class GestureDetecotr extends GestureDetector.SimpleOnGestureListener {
+
+		@Override
+		public boolean onDoubleTap(MotionEvent event) {
+			VolumeView.this.onDoubleTap(event);
+			return true;
+		}
+
+		@Override
+		public void onLongPress(MotionEvent event) {
+			VolumeView.this.onLongPress(event);
+		}
 	}
 }
