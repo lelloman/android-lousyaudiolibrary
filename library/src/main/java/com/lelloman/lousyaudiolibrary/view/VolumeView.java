@@ -4,7 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -24,13 +27,16 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public static final int K = 4;
 	private static final Object BITMAP_LOCK = 0xb00b5;
+	private static final int DEFAULT_BG_COLOR = 0xffbbbbbb;
 
 	private Paint paint = new Paint();
 	private Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint hightLightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
 	private Bitmap bitmap;
 	private Canvas canvas;
 	private Rect srcRect, dstRect;
+	private Rect subWindowSrcRect, subWindowDstRect;
 
 	private boolean dragging;
 	private float draggingX;
@@ -45,6 +51,8 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	private int zoomLevel;
 	private GestureDetector gestureDetector;
 	private boolean canDrag = true;
+	private boolean hasSubWindow = false;
+	private float subWindowStart, subWindowEnd;
 
 	public VolumeView(Context context) {
 		this(context, null);
@@ -58,7 +66,36 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		cursorPaint.setColor(Color.YELLOW);
 		cursorPaint.setStyle(Paint.Style.STROKE);
 		cursorPaint.setStrokeWidth(2*getResources().getDisplayMetrics().density);
+
+		hightLightPaint.setStyle(Paint.Style.FILL);
+		hightLightPaint.setColor(Color.WHITE);
+
+		PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(0xffffff, PorterDuff.Mode.ADD);
+		float[] colorTransform = {
+				0, 1f, 0, 0, 0,
+				0, 0, 0f, 0, 0,
+				0, 0, 0, 0f, 0,
+				0, 0, 0, 1f, 0};
+
+		ColorMatrix colorMatrix = new ColorMatrix();
+		colorMatrix.setSaturation(0f); //Remove Colour
+		colorMatrix.set(colorTransform); //Apply the Red
+
+		float[] NEGATIVE = {
+				-1.0f,     0,     0,    0, 255, // red
+				0, -1.0f,     0,    0, 255, // green
+				0,     0, -1.0f,    0, 255, // blue
+				0,     0,     0, 1.0f,   0  // alpha
+		};
+
+//		ColorMatrixColorFilter colorFilter = new ColorMatrixColorFilter(NEGATIVE);
+
+		//ColorFilter colorFilter = new LightingColorFilter(3, 0x111111);
+		hightLightPaint.setColorFilter(colorFilter);
+
 		dstRect = new Rect(0, 0, 1, 1);
+		subWindowSrcRect = new Rect(0, 0, 1, 1);
+		subWindowDstRect = new Rect(0, 0, 1, 1);
 
 		draggingPaint.setStyle(Paint.Style.STROKE);
 		draggingPaint.setColor(Color.YELLOW);
@@ -74,6 +111,15 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		if(bitmap != null){
 			drawBitmap();
 		}
+	}
+
+	public void setSubWindow(float start, float end){
+		hasSubWindow = true;
+		subWindowStart = start;
+		subWindowEnd = end;
+	}
+	public void unSetSubWindow(){
+		hasSubWindow = false;
 	}
 
 	public void setListener(VolumeViewListener l) {
@@ -116,6 +162,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 			bitmap = Bitmap.createBitmap(levels[zoomLevel], height, Bitmap.Config.ARGB_8888);
 			canvas = new Canvas(bitmap);
+			canvas.drawColor(DEFAULT_BG_COLOR);
 			srcRect = new Rect(0, 0, levels[zoomLevel], height);
 		}
 	}
@@ -170,7 +217,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		canvas.drawColor(0xff888888);
+		canvas.drawColor(0xffaaaaaa);
 
 		int width = canvas.getWidth();
 		int height = canvas.getHeight();
@@ -180,6 +227,20 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 				dstRect.set(0, 0, width, height);
 				canvas.drawBitmap(bitmap, srcRect, dstRect, null);
 			}
+		}
+
+		if(hasSubWindow){
+			int left = (int) (width * subWindowStart);
+			int right = (int) (width * subWindowEnd);
+			subWindowDstRect.set(left,0,right, height);
+
+			left = (int) (bitmap.getWidth() * subWindowStart);
+			right = (int) (bitmap.getWidth() * subWindowEnd);
+
+			subWindowSrcRect.set(left, 0, right, bitmap.getHeight());
+
+			canvas.drawBitmap(bitmap, subWindowSrcRect, subWindowDstRect, hightLightPaint);
+			//canvas.drawBitmap(bitmap, srcRect, dstRect, hightLightPaint);
 		}
 
 		int x = (int) (width * cursor);
