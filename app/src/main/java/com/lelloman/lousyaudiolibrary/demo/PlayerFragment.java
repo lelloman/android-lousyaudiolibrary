@@ -35,8 +35,8 @@ public class PlayerFragment extends Fragment implements
 	private VolumeReader volumeReader;
 
 	private boolean hasSubWindow;
-	private double subWindowStart;
-	private double subWindowEnd;
+	private float subWindowStart;
+	private float subWindowEnd;
 
 	private int resId;
 
@@ -128,6 +128,12 @@ public class PlayerFragment extends Fragment implements
 		if (volumeReader != null) {
 			volumeView.setVolumeReader(volumeReader);
 		}
+
+		if(hasSubWindow){
+			volumeView.setWindow(subWindowStart, subWindowEnd);
+		}
+
+		volumeView.setCursor((float) player.getCurrentPercent());
 
 		btnPlay.setOnClickListener(this);
 		btnPause.setOnClickListener(this);

@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	protected static final int FRAME_SIZE = 4096 * 4;
-	protected static final int HOP = FRAME_SIZE / 8;
+	protected static final int HOP = FRAME_SIZE / 4;
 	protected static final float SCALE = .5f;
 
 	private boolean slow = false;

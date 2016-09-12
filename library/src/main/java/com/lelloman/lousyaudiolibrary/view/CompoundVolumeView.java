@@ -42,6 +42,9 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 
 		volumeViewFull.setListener(this);
 		volumeViewSub.setListener(this);
+
+		volumeViewFull.setCanDrag(true);
+		volumeViewSub.setCanDrag(false);
 	}
 
 	public void setVolumeReader(VolumeReader volumeReader) {
@@ -50,6 +53,11 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 
 	public void setCursor(float percent) {
 		volumeViewFull.setCursor(percent);
+		if(showingFull) return;
+
+		float span = windowEnd - windowStart;
+		float localPercent = (percent - windowStart) / span;
+		volumeViewSub.setCursor(localPercent);
 	}
 
 	public void setListener(CompoundVolumeViewListener l) {
@@ -74,6 +82,8 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 		volumeViewSub.setVolumeReader(volumeViewFull.getVolumeReader().subWindow(start, end));
 
 		showingFull = false;
+
+		volumeViewFull.setCanDrag(false);
 	}
 
 	public void unSetWindow(){
@@ -88,6 +98,8 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 		layoutParams.height = 0;
 		layoutParams.weight = 0;
 		volumeViewSub.setLayoutParams(layoutParams);
+
+		volumeViewFull.setCanDrag(true);
 	}
 
 	@Override
@@ -108,7 +120,6 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 		if(listener == null) return;
 
 		listener.onWindowUnselected(this);
-
 	}
 
 	@Override

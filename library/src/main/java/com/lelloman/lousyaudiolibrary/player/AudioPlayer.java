@@ -11,154 +11,160 @@ import java.util.Arrays;
 
 public class AudioPlayer implements Runnable {
 
-    public interface EventsListener {
-        void onStart(AudioPlayer player);
-        void onPlaybackUpdate(AudioPlayer player, double percent, long timeMs);
-        void onRelease(AudioPlayer player);
-    }
+	public interface EventsListener {
+		void onStart(AudioPlayer player);
 
-    public static final int CREATED = 0;
-    public static final int READY_TO_PLAY = 1;
-    public static final int PLAYING = 2;
-    public static final int PAUSED = 3;
-    public static final int RELEASED = 4;
-    public static final int ABORTED = 5;
+		void onPlaybackUpdate(AudioPlayer player, double percent, long timeMs);
 
-    protected IAudioReader reader;
-    private AudioTrack audioTrack;
+		void onRelease(AudioPlayer player);
+	}
 
-    protected boolean running = false;
-    protected byte[] emptyChunk;
+	public static final int CREATED = 0;
+	public static final int READY_TO_PLAY = 1;
+	public static final int PLAYING = 2;
+	public static final int PAUSED = 3;
+	public static final int RELEASED = 4;
+	public static final int ABORTED = 5;
 
-    private EventsListener listener;
+	protected IAudioReader reader;
+	private AudioTrack audioTrack;
 
-    private int state = CREATED;
+	protected boolean running = false;
+	protected byte[] emptyChunk;
 
-    private long currentMs = 0;
-    private double percent = 0;
+	private EventsListener listener;
 
-    public AudioPlayer(EventsListener listener) {
-        this.listener = listener;
-    }
+	private int state = CREATED;
 
-    public boolean init(IAudioReader reader){
-        try {
-            this.reader = reader;
-            initAudioTrack();
-            state = READY_TO_PLAY;
-            return true;
-        }catch(Exception e){
-            e.printStackTrace();
-            state = ABORTED;
-            return false;
-        }
-    }
+	private long currentMs = 0;
+	private double percent = 0;
 
-    protected void initAudioTrack() {
-        int sampleRate = reader.getSampleRate();
-        int channelConfiguration = reader.getChannels() == 1 ? AudioFormat.CHANNEL_OUT_MONO : AudioFormat.CHANNEL_OUT_STEREO;
-        int minSize = AudioTrack.getMinBufferSize(sampleRate, channelConfiguration, AudioFormat.ENCODING_PCM_16BIT);
+	public AudioPlayer(EventsListener listener) {
+		this.listener = listener;
+	}
 
-        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfiguration,
-                AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
+	public boolean init(IAudioReader reader) {
+		try {
+			this.reader = reader;
+			initAudioTrack();
+			state = READY_TO_PLAY;
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			state = ABORTED;
+			return false;
+		}
+	}
 
-        audioTrack.play();
+	protected void initAudioTrack() {
+		int sampleRate = reader.getSampleRate();
+		int channelConfiguration = reader.getChannels() == 1 ? AudioFormat.CHANNEL_OUT_MONO : AudioFormat.CHANNEL_OUT_STEREO;
+		int minSize = AudioTrack.getMinBufferSize(sampleRate, channelConfiguration, AudioFormat.ENCODING_PCM_16BIT);
 
-        emptyChunk = new byte[minSize];
-        Arrays.fill(emptyChunk, (byte) 0);
-    }
+		audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfiguration,
+				AudioFormat.ENCODING_PCM_16BIT, minSize, AudioTrack.MODE_STREAM);
 
-    public boolean start() {
-        if (state == READY_TO_PLAY) {
-            running = true;
-            new Thread(this).start();
-            return true;
-        } else {
-            return false;
-        }
-    }
+		audioTrack.play();
 
-    @Override
-    public void run() {
+		emptyChunk = new byte[minSize];
+		Arrays.fill(emptyChunk, (byte) 0);
+	}
 
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
-        state = PAUSED;
+	public boolean start() {
+		if (state == READY_TO_PLAY) {
+			running = true;
+			new Thread(this).start();
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-        listener.onStart(this);
+	@Override
+	public void run() {
 
-        while (running) {
+		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+		state = PAUSED;
 
-            byte[] chunk = emptyChunk;
+		listener.onStart(this);
 
-            if (state != PAUSED) {
-                chunk = getNextChunk();
-                updateCurrentPosition();
-                this.listener.onPlaybackUpdate(this, percent, currentMs);
-            }
-            if (chunk == null || chunk.length == 0) {
-                chunk = emptyChunk;
-                if(reader.getSawOutputEOS()){
-                    reader.reset();
-                    this.listener.onPlaybackUpdate(this, percent, currentMs);
-                    pause();
-                }
-            }
+		while (running) {
 
-            audioTrack.write(chunk, 0, chunk.length);
-        }
+			byte[] chunk = emptyChunk;
 
-        listener.onRelease(this);
-        state = RELEASED;
-        reader.release();
+			if (state != PAUSED) {
+				chunk = getNextChunk();
+				updateCurrentPosition();
+				this.listener.onPlaybackUpdate(this, percent, currentMs);
+			}
+			if (chunk == null || chunk.length == 0) {
+				chunk = emptyChunk;
+				if (reader.getSawOutputEOS()) {
+					reader.reset();
+					this.listener.onPlaybackUpdate(this, percent, currentMs);
+					pause();
+				}
+			}
 
-        audioTrack.flush();
-        audioTrack.release();
-        audioTrack = null;
-    }
+			audioTrack.write(chunk, 0, chunk.length);
+		}
 
-    protected byte[] getNextChunk(){
-        return reader.nextChunk();
-    }
+		listener.onRelease(this);
+		state = RELEASED;
+		reader.release();
 
-    public void kill() {
-        running = false;
-    }
+		audioTrack.flush();
+		audioTrack.release();
+		audioTrack = null;
+	}
 
-    public void pause() {
-        if (state == PLAYING)
-            state = PAUSED;
-        else
-            Log.w(AudioPlayer.class.getSimpleName(), String.format("pause() called on player not in state PLAYING (current state is %s", state));
-    }
+	protected byte[] getNextChunk() {
+		return reader.nextChunk();
+	}
 
-    public void play() {
-        if (state == PAUSED)
-            state = PLAYING;
-        else
-            Log.w(AudioPlayer.class.getSimpleName(), String.format("play() called on player not in state PAUSED (current state is %s)", state));
-    }
+	public double getCurrentPercent() {
+		return percent;
+	}
 
-    private void updateCurrentPosition(){
-        this.percent = reader.getPercent();
-        this.currentMs = reader.getCurrentMs();
-    }
+	public void kill() {
+		running = false;
+	}
 
-    public void seek(long pos) {
-        reader.seek(pos);
-        updateCurrentPosition();
-    }
+	public void pause() {
+		if (state == PLAYING)
+			state = PAUSED;
+		else
+			Log.w(AudioPlayer.class.getSimpleName(), String.format("pause() called on player not in state PLAYING (current state is %s", state));
+	}
 
-    public void seek(double percent) {
-        reader.seek(percent);
-        updateCurrentPosition();
+	public void play() {
+		if (state == PAUSED)
+			state = PLAYING;
+		else
+			Log.w(AudioPlayer.class.getSimpleName(), String.format("play() called on player not in state PAUSED (current state is %s)", state));
+	}
 
-    }
+	private void updateCurrentPosition() {
+		this.percent = reader.getPercent();
+		this.currentMs = reader.getCurrentMs();
+	}
 
-    public long getCurrentMs() {
-        return currentMs;
-    }
+	public void seek(long pos) {
+		reader.seek(pos);
+		updateCurrentPosition();
+	}
 
-    public long getDurationMs() {
-        return reader.getDurationMs();
-    }
+	public void seek(double percent) {
+		reader.seek(percent);
+		updateCurrentPosition();
+
+	}
+
+	public long getCurrentMs() {
+		return currentMs;
+	}
+
+	public long getDurationMs() {
+		return reader.getDurationMs();
+	}
 }

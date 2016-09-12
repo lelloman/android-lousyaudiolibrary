@@ -44,6 +44,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	private int minHeight, maxHeight;
 	private int zoomLevel;
 	private GestureDetector gestureDetector;
+	private boolean canDrag = true;
 
 	public VolumeView(Context context) {
 		this(context, null);
@@ -207,9 +208,11 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	}
 
 	protected void onLongPress(MotionEvent event){
-		dragging = true;
-		draggingX = event.getX();
-		postInvalidate();
+		if(canDrag) {
+			dragging = true;
+			draggingX = event.getX();
+			postInvalidate();
+		}
 	}
 
 	@Override
@@ -246,6 +249,14 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public VolumeReader getVolumeReader(){
 		return volumeReader;
+	}
+
+	public void setCanDrag(boolean b){
+		canDrag = b;
+		if(!canDrag){
+			hasSecondCursor = false;
+			dragging = false;
+		}
 	}
 
 	private class GestureDetecotr extends GestureDetector.SimpleOnGestureListener {
