@@ -17,6 +17,7 @@ import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 public class VolumeView extends View implements VolumeReader.OnVolumeReadListener {
 
 	public interface VolumeViewListener {
+		void onSingleTap(VolumeView volumeView, float percentX);
 		void onDoubleTap(VolumeView volumeView, float percentX);
 		void onWindowSelected(VolumeView volumeView, float start, float end);
 	}
@@ -189,6 +190,14 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	}
 
+	protected void onSingleTup(MotionEvent event){
+		dragging = false;
+		if(listener != null){
+			float x = event.getX() / getWidth();
+			listener.onSingleTap(this, x);
+		}
+	}
+
 	protected void onDoubleTap(MotionEvent event){
 		dragging = false;
 		if(listener != null){
@@ -244,6 +253,12 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		@Override
 		public boolean onDoubleTap(MotionEvent event) {
 			VolumeView.this.onDoubleTap(event);
+			return true;
+		}
+
+		@Override
+		public boolean onSingleTapUp(MotionEvent event) {
+			VolumeView.this.onSingleTup(event);
 			return true;
 		}
 

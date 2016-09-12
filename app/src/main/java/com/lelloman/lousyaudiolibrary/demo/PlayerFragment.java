@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
@@ -125,6 +124,7 @@ public class PlayerFragment extends Fragment implements
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
 		volumeView = (CompoundVolumeView) rootView.findViewById(R.id.volumeView);
+
 		if (volumeReader != null) {
 			volumeView.setVolumeReader(volumeReader);
 		}
@@ -202,14 +202,20 @@ public class PlayerFragment extends Fragment implements
 
 	@Override
 	public void onWindowSelected(CompoundVolumeView compoundVolumeView, float start, float end) {
-		Toast.makeText(getActivity(), String.format("%.2f - %.2f", start, end), Toast.LENGTH_SHORT).show();
-
 		hasSubWindow = true;
 		subWindowStart = start;
 		subWindowEnd = end;
 
 		if(volumeView != null){
 			volumeView.setWindow(start, end);
+		}
+	}
+
+	@Override
+	public void onWindowUnselected(CompoundVolumeView compoundVolumeView) {
+		hasSubWindow = false;
+		if(volumeView != null){
+			volumeView.unSetWindow();
 		}
 	}
 }

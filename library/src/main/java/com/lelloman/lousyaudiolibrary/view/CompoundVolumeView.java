@@ -12,6 +12,7 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 	public interface CompoundVolumeViewListener {
 		void onMoveCursor(CompoundVolumeView compoundVolumeView, float percentX);
 		void onWindowSelected(CompoundVolumeView compoundVolumeView, float start, float end);
+		void onWindowUnselected(CompoundVolumeView compoundVolumeView);
 	}
 
 	private VolumeView volumeViewFull;
@@ -75,28 +76,46 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 		showingFull = false;
 	}
 
+	public void unSetWindow(){
+		showingFull = true;
+
+		LayoutParams layoutParams = (LayoutParams) volumeViewFull.getLayoutParams();
+		layoutParams.height = LayoutParams.MATCH_PARENT;
+		layoutParams.weight = 1;
+		volumeViewFull.setLayoutParams(layoutParams);
+
+		layoutParams = (LayoutParams) volumeViewSub.getLayoutParams();
+		layoutParams.height = 0;
+		layoutParams.weight = 0;
+		volumeViewSub.setLayoutParams(layoutParams);
+	}
+
+	@Override
+	public void onSingleTap(VolumeView volumeView, float percentX) {
+		if(listener == null) return;
+
+		if(volumeView == volumeViewFull && showingFull){
+			listener.onMoveCursor(this, percentX);
+		}else if(volumeView == volumeViewSub && !showingFull){
+			float span = windowEnd - windowStart;
+			float totPercentX = windowStart + percentX * span;
+			listener.onMoveCursor(this, totPercentX);
+		}
+	}
+
 	@Override
 	public void onDoubleTap(VolumeView volumeView, float percentX) {
+		if(listener == null) return;
 
-		if (!showingFull && volumeView == volumeViewFull) {
-			return;
-		} else if (volumeView == volumeViewFull) {
-			if (listener != null) {
-				listener.onMoveCursor(this, percentX);
-			}
-		} else if (volumeView == volumeViewSub) {
-			if (listener != null) {
-				float span = windowEnd - windowStart;
-				float totPercentX = windowStart + percentX * span;
-				listener.onMoveCursor(this, totPercentX);
-			}
-		}
+		listener.onWindowUnselected(this);
 
 	}
 
 	@Override
 	public void onWindowSelected(VolumeView volumeView, float start, float end) {
-		if(volumeView == volumeViewFull && showingFull && listener != null){
+		if(listener == null) return;
+
+		if(volumeView == volumeViewFull && showingFull){
 			listener.onWindowSelected(this, start, end);
 		}
 	}
