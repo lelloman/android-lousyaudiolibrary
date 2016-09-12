@@ -1,6 +1,8 @@
 package com.lelloman.lousyaudiolibrary.reader;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.List;
 
 public class VolumeReader {
 
@@ -18,8 +20,36 @@ public class VolumeReader {
 	private OnVolumeReadListener listener;
 	private long totalFrames;
 	private int[] zoomLevels;
+	private List<VolumeReader> children = new LinkedList<>();
+	private boolean reading;
+
+	private VolumeReader(VolumeReader parent, float start, float end){
+		this.zoomLevels = new int[parent.zoomLevels.length];
+		this.totalFrames = parent.totalFrames;
+		this.miniByteBuffer = new byte[2];
+		data = new Double[zoomLevels.length][];
+		float span = end - start;
+
+		for(int i=0;i<data.length;i++){
+			int subZoomLevel = (int) (parent.zoomLevels[i] * span);
+			this.zoomLevels[i] = subZoomLevel;
+			data[i] = new Double[subZoomLevel];
+			int startJ = (int) (zoomLevels[i] * start);
+			for(int j=0;j<subZoomLevel;j++){
+				Double d = parent.data[i][j+startJ];
+				if(d == null){
+					break;
+				}
+
+				data[i][j] = d;
+			}
+		}
+
+
+	}
 
 	public VolumeReader(final IAudioReader audioReader, int... zoomLevels) {
+
 		this.audioReader = audioReader;
 		this.miniByteBuffer = new byte[2];
 		totalFrames = audioReader.getDurationFrames();
@@ -33,20 +63,36 @@ public class VolumeReader {
 			makers[i] = new VolumeMaker(i, pcmFramesPerVolume, data[i]);
 		}
 
+		reading = true;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-
 				while(run && cursor < totalFrames && !audioReader.getSawOutputEOS()){
-
 					miniByteBuffer[1] = getNextByte();
 					miniByteBuffer[0] = getNextByte();
 					short s = ByteBuffer.wrap(miniByteBuffer).getShort();
 					short v = (short) Math.abs(s);
 					for(VolumeMaker maker : makers) maker.nextSample(v);
+					cursor++;
+				}
+				reading = false;
+				synchronized (children){
+					children.clear();
 				}
 			}
 		}).start();
+	}
+
+	public VolumeReader subWindow(float start, float end){
+
+		VolumeReader output = new VolumeReader(this, start, end);
+		if(reading) {
+			synchronized (children) {
+				children.add(output);
+			}
+		}
+
+		return output;
 	}
 
 	public int getVolumeLength(int zoomLevel) {

@@ -10,20 +10,17 @@ import android.view.MotionEvent;
 
 public class ZoomableVolumeView extends VolumeView {
 
-	public interface ZoomableViewListener extends VolumeViewListener {
-		void onWindowSelected(ZoomableVolumeView volumeView, float start, float end);
-	}
 
 	private boolean dragging;
 	private float draggingX;
 	private Paint draggingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
 	private boolean hasSecondCursor;
-	private ZoomableViewListener listener;
 
 	private boolean hasWindow;
 	private float windowStart;
 	private float windowEnd;
+	private float windowRatio;
 
 	public ZoomableVolumeView(Context context) {
 		this(context, null);
@@ -34,14 +31,6 @@ public class ZoomableVolumeView extends VolumeView {
 		draggingPaint.setStyle(Paint.Style.STROKE);
 		draggingPaint.setColor(Color.YELLOW);
 		draggingPaint.setAlpha(155);
-	}
-
-	@Override
-	public void setVolumeViewListener(VolumeViewListener l) {
-		super.setVolumeViewListener(l);
-		if (l instanceof ZoomableViewListener) {
-			listener = (ZoomableViewListener) l;
-		}
 	}
 
 	@Override
@@ -70,17 +59,24 @@ public class ZoomableVolumeView extends VolumeView {
 	protected void onDraw(Canvas canvas) {
 
 		if(hasWindow){
+			float upperWaveHeight = .2f;
 			canvas.save();
-			canvas.scale(1,.2f,getWidth()*.5f,0);
+			canvas.scale(1,upperWaveHeight,getWidth()*.5f,0);
 			super.onDraw(canvas);
 			canvas.restore();
+
+			if (dragging || hasSecondCursor) {
+				int miniHeight = (int) (canvas.getHeight() * upperWaveHeight);
+				canvas.drawLine(draggingX, miniHeight, draggingX, canvas.getHeight(), draggingPaint);
+			}
 		}else{
 			super.onDraw(canvas);
+			if (dragging || hasSecondCursor) {
+				canvas.drawLine(draggingX, 0, draggingX, canvas.getHeight(), draggingPaint);
+			}
 		}
 
-		if (dragging || hasSecondCursor) {
-			canvas.drawLine(draggingX, 0, draggingX, canvas.getHeight(), draggingPaint);
-		}
+
 	}
 
 	@Override
@@ -101,6 +97,7 @@ public class ZoomableVolumeView extends VolumeView {
 		hasWindow = true;
 		this.windowStart = windowStart;
 		this.windowEnd = windowEnd;
+		windowRatio = windowEnd - windowStart;
 		postInvalidate();
 	}
 }

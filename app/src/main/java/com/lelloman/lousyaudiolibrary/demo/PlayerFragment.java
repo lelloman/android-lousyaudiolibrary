@@ -15,14 +15,14 @@ import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
 import com.lelloman.lousyaudiolibrary.reader.AudioReader;
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
+import com.lelloman.lousyaudiolibrary.view.CompoundVolumeView;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
-import com.lelloman.lousyaudiolibrary.view.ZoomableVolumeView;
 
 
 public class PlayerFragment extends Fragment implements
 		View.OnClickListener,
 		SeekBar.OnSeekBarChangeListener,
-		ZoomableVolumeView.ZoomableViewListener{
+		VolumeView.VolumeViewListener{
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
@@ -32,7 +32,7 @@ public class PlayerFragment extends Fragment implements
 	private Button btnPlay;
 	private ToggleButton btnSlow;
 	private SeekBar seekBarSpeed;
-	private ZoomableVolumeView volumeView;
+	private CompoundVolumeView volumeView;
 	private VolumeReader volumeReader;
 
 	private boolean hasSubWindow;
@@ -121,7 +121,7 @@ public class PlayerFragment extends Fragment implements
 		btnPlay = (Button) rootView.findViewById(R.id.btnPlay);
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
-		volumeView = (ZoomableVolumeView) rootView.findViewById(R.id.volumeView);
+		volumeView = (CompoundVolumeView) rootView.findViewById(R.id.volumeView);
 		if (volumeReader != null) {
 			volumeView.setVolumeReader(volumeReader);
 		}
@@ -130,7 +130,7 @@ public class PlayerFragment extends Fragment implements
 		btnPause.setOnClickListener(this);
 		btnSlow.setOnClickListener(this);
 		seekBarSpeed.setOnSeekBarChangeListener(this);
-		volumeView.setVolumeViewListener(this);
+		volumeView.setListener(this);
 
 		return rootView;
 	}
@@ -198,7 +198,7 @@ public class PlayerFragment extends Fragment implements
 	}
 
 	@Override
-	public void onWindowSelected(ZoomableVolumeView view, float start, float end) {
+	public void onWindowSelected(VolumeView view, float start, float end) {
 		Toast.makeText(getActivity(), String.format("%.2f - %.2f", start, end), Toast.LENGTH_SHORT).show();
 
 		hasSubWindow = true;

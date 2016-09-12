@@ -18,6 +18,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public interface VolumeViewListener {
 		void onDoubleTap(VolumeView volumeView, float percentX);
+		void onWindowSelected(VolumeView volumeView, float start, float end);
 	}
 
 	public static final int K = 4;
@@ -30,8 +31,13 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	private Canvas canvas;
 	private Rect srcRect, dstRect;
 
+	private boolean dragging;
+	private float draggingX;
+	private Paint draggingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private boolean hasSecondCursor;
+
 	private float cursor = 0;
-	private VolumeViewListener volumeViewListener;
+	protected VolumeViewListener listener;
 	private VolumeReader volumeReader;
 
 	private int minHeight, maxHeight;
@@ -52,6 +58,10 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		cursorPaint.setStrokeWidth(2*getResources().getDisplayMetrics().density);
 		dstRect = new Rect(0, 0, 1, 1);
 
+		draggingPaint.setStyle(Paint.Style.STROKE);
+		draggingPaint.setColor(Color.YELLOW);
+		draggingPaint.setAlpha(155);
+
 		gestureDetector = new GestureDetector(context, new  GestureDetecotr());
 	}
 
@@ -64,8 +74,8 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 	}
 
-	public void setVolumeViewListener(VolumeViewListener l) {
-		this.volumeViewListener = l;
+	public void setListener(VolumeViewListener l) {
+		this.listener = l;
 	}
 
 	@Override
@@ -173,23 +183,46 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		int x = (int) (width * cursor);
 		canvas.drawLine(x,height,x,0,cursorPaint);
 
+		if (dragging || hasSecondCursor) {
+			canvas.drawLine(draggingX, 0, draggingX, canvas.getHeight(), draggingPaint);
+		}
+
 	}
 
 	protected void onDoubleTap(MotionEvent event){
-		if(volumeViewListener != null){
+		dragging = false;
+		if(listener != null){
 			float x = event.getX() / getWidth();
-			volumeViewListener.onDoubleTap(this, x);
+			listener.onDoubleTap(this, x);
 		}
 	}
 
 	protected void onLongPress(MotionEvent event){
-
+		dragging = true;
+		draggingX = event.getX();
+		postInvalidate();
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent motionEvent) {
 
 		gestureDetector.onTouchEvent(motionEvent);
+		
+		int action = motionEvent.getAction();
+
+		if (dragging && action == motionEvent.ACTION_MOVE) {
+			draggingX = motionEvent.getX();
+		} else if (dragging && action == motionEvent.ACTION_UP) {
+			draggingX = motionEvent.getX();
+			dragging = false;
+			hasSecondCursor = true;
+			if(listener != null){
+				float secondCursor = draggingX / getWidth();
+				listener.onWindowSelected(this, Math.min(getCursor(), secondCursor), Math.max(getCursor(), secondCursor));
+			}
+		}
+		postInvalidate();
+
 
 		return true;
 	}
@@ -200,6 +233,10 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public float getCursor(){
 		return cursor;
+	}
+
+	public VolumeReader getVolumeReader(){
+		return volumeReader;
 	}
 
 	private class GestureDetecotr extends GestureDetector.SimpleOnGestureListener {
