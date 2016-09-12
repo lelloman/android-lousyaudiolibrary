@@ -10,7 +10,6 @@ import android.view.MotionEvent;
 
 public class ZoomableVolumeView extends VolumeView {
 
-
 	private boolean dragging;
 	private float draggingX;
 	private Paint draggingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);

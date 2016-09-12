@@ -1,6 +1,9 @@
 package com.lelloman.lousyaudiolibrary.reader;
 
+import android.util.Log;
+
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,7 +19,6 @@ public class VolumeReader {
 	private byte[] miniByteBuffer;
 	private Double[][] data;
 	private int cursor;
-	private boolean run = true;
 	private OnVolumeReadListener listener;
 	private long totalFrames;
 	private int[] zoomLevels;
@@ -34,18 +36,18 @@ public class VolumeReader {
 			int subZoomLevel = (int) (parent.zoomLevels[i] * span);
 			this.zoomLevels[i] = subZoomLevel;
 			data[i] = new Double[subZoomLevel];
-			int startJ = (int) (zoomLevels[i] * start);
+			int startJ = (int) (parent.zoomLevels[i] * start);
+
 			for(int j=0;j<subZoomLevel;j++){
 				Double d = parent.data[i][j+startJ];
 				if(d == null){
 					break;
 				}
-
 				data[i][j] = d;
 			}
 		}
 
-
+		Log.d(VolumeReader.class.getSimpleName(), String.format("subWindow original levels = %s - sub %s", Arrays.toString(parent.zoomLevels), Arrays.toString(this.zoomLevels)));
 	}
 
 	public VolumeReader(final IAudioReader audioReader, int... zoomLevels) {
@@ -67,7 +69,7 @@ public class VolumeReader {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while(run && cursor < totalFrames && !audioReader.getSawOutputEOS()){
+				while(cursor < totalFrames && !audioReader.getSawOutputEOS()){
 					miniByteBuffer[1] = getNextByte();
 					miniByteBuffer[0] = getNextByte();
 					short s = ByteBuffer.wrap(miniByteBuffer).getShort();

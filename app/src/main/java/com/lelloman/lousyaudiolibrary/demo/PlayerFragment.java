@@ -91,18 +91,23 @@ public class PlayerFragment extends Fragment implements
 		player = new SlowAudioPlayer(playerListener);
 
 		try {
-			AudioReader audioReader = new AudioReader(getActivity(), R.raw.paintmono2m);
+			AudioReader audioReader = new AudioReader(getActivity(), resId);
 
 			if (player.init(audioReader)) {
 				player.start();
 				int width = getResources().getDisplayMetrics().widthPixels;
 				int height = getResources().getDisplayMetrics().heightPixels;
 
+				int tot = width / VolumeView.K;
+
 				int[] intervals = new int[]{
-						(width / VolumeView.K),
-						(height/ VolumeView.K)
+						tot,
+						tot*2,
+						tot*4,
+						tot*6,
+
 				};
-				volumeReader = new VolumeReader(new AudioReader(getActivity(), R.raw.paintmono2m), intervals);
+				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
 			} else {
 				throw new Exception("mboh");
 			}
