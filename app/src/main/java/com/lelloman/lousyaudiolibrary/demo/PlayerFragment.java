@@ -22,7 +22,7 @@ import com.lelloman.lousyaudiolibrary.view.VolumeView;
 public class PlayerFragment extends Fragment implements
 		View.OnClickListener,
 		SeekBar.OnSeekBarChangeListener,
-		VolumeView.VolumeViewListener{
+		CompoundVolumeView.CompoundVolumeViewListener{
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
@@ -68,7 +68,6 @@ public class PlayerFragment extends Fragment implements
 					player.seek(subWindowStart);
 				}
 			}
-
 		}
 
 		@Override
@@ -104,8 +103,7 @@ public class PlayerFragment extends Fragment implements
 						tot,
 						tot*2,
 						tot*4,
-						tot*6,
-
+						tot*6
 				};
 				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
 			} else {
@@ -195,7 +193,7 @@ public class PlayerFragment extends Fragment implements
 	}
 
 	@Override
-	public void onDoubleTap(VolumeView volumeView, float percentX) {
+	public void onMoveCursor(CompoundVolumeView compoundVolumeView, float percentX) {
 		player.seek(percentX);
 		if (volumeView != null) {
 			volumeView.setCursor(percentX);
@@ -203,7 +201,7 @@ public class PlayerFragment extends Fragment implements
 	}
 
 	@Override
-	public void onWindowSelected(VolumeView view, float start, float end) {
+	public void onWindowSelected(CompoundVolumeView compoundVolumeView, float start, float end) {
 		Toast.makeText(getActivity(), String.format("%.2f - %.2f", start, end), Toast.LENGTH_SHORT).show();
 
 		hasSubWindow = true;
