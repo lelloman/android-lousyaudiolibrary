@@ -85,6 +85,7 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 
 		volumeViewFull.setCanDrag(false);
 		volumeViewFull.setSubWindow(start, end);
+		volumeViewSub.setCanDrag(true);
 	}
 
 	public void unSetWindow(){
@@ -102,6 +103,7 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 
 		volumeViewFull.setCanDrag(true);
 		volumeViewFull.unSetSubWindow();
+		volumeViewSub.setCanDrag(false);
 	}
 
 	@Override
@@ -130,6 +132,13 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 
 		if(volumeView == volumeViewFull && showingFull){
 			listener.onWindowSelected(this, start, end);
+		}else if(volumeView == volumeViewSub && !showingFull){
+			float span = windowEnd - windowStart;
+			float actualStart = windowStart + start * span;
+			float actualEnd = windowStart + end * span;
+			listener.onWindowSelected(this, actualStart, actualEnd);
 		}
+
+		volumeView.resetDrag();
 	}
 }

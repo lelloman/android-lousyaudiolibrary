@@ -182,6 +182,11 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 	}
 
+	public void resetDrag(){
+		dragging = false;
+		postInvalidate();
+	}
+
 	@Override
 	public void onNewFrame(int zoomLevel, int frameIndex, int totFrames, Double value) {
 
