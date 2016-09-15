@@ -1,6 +1,7 @@
 package com.lelloman.lousyaudiolibrary.player;
 
-import com.lelloman.lousyaudiolibrary.algorithm.PhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.IPhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.nio.ByteBuffer;
@@ -13,7 +14,7 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	private boolean slow = false;
 
-	private PhaseVocoder vocoder = null;
+	private IPhaseVocoder vocoder = null;
 	private ByteBuffer miniByteBuffer = ByteBuffer.allocate(2);
 
 	public SlowAudioPlayer(EventsListener listener) {
@@ -29,7 +30,7 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	private void initVocoder() {
 		if (reader == null) return;
-		vocoder = new PhaseVocoder(reader, SCALE, FRAME_SIZE, HOP);
+		vocoder = new NativePhaseVocoder(reader, SCALE, FRAME_SIZE, HOP);
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 		return 0;
 	}
 
-	public PhaseVocoder getVocoder(){
+	public IPhaseVocoder getVocoder(){
 		return vocoder;
 	}
 

@@ -1,12 +1,13 @@
-package com.lelloman.lousyaudiolibrary.algorithm;
+package com.lelloman.lousyaudiolibrary.algorithm.phasevocoder;
 
 import com.lelloman.lousyaudiolibrary.BufferManager;
+import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
 
-public class PhaseVocoder {
+public class NativePhaseVocoder implements IPhaseVocoder {
 
 	public static final double PI2 = Math.PI * 2;
 
@@ -21,13 +22,14 @@ public class PhaseVocoder {
 	private double[] win;// = new double[N];
 	private double[] buffer;
 	private double[] output;// = new double[H];
-	private DoubleFFT_1D fft;// = new DoubleFFT_1D(N);
+	private Fft fft;// = new DoubleFFT_1D(N);
+	private DoubleFFT_1D jfft;
 
 	private IAudioReader audioReader;
 	private BufferManager manager;
 	private boolean slow;
 
-	public PhaseVocoder(IAudioReader reader, double tscale, int N, int H) {
+	public NativePhaseVocoder(IAudioReader reader, double tscale, int N, int H) {
 
 		this.audioReader = reader;
 		this.N = N;
@@ -42,7 +44,8 @@ public class PhaseVocoder {
 		spec1 = new double[N2];
 		spec2 = new double[N2];
 		sigout = new double[N];
-		fft = new DoubleFFT_1D(N);
+		fft = new Fft(N2);
+		jfft = new DoubleFFT_1D(N);
 		output = new double[H];
 
 		win = new double[N];
@@ -54,6 +57,7 @@ public class PhaseVocoder {
 
 	}
 
+	@Override
 	public void setScale(double v) {
 		this.tscale = v;
 		int stepSize = (int) (H * tscale);
@@ -61,6 +65,7 @@ public class PhaseVocoder {
 		slow = v < .99;
 	}
 
+	@Override
 	public double[] next() {
 
 		buffer = manager.next();
@@ -82,7 +87,8 @@ public class PhaseVocoder {
 			spec2[i] = Math.abs(spec2[i]) * out[i];
 
 
-		fft.realInverse(spec2, true);
+		jfft.realInverse(spec2, true);
+	//	fft.realInverse(spec2);
 
 		for (int i = 0; i < N; i++)
 			sigout[i] += win[i] * spec2[i];
@@ -91,6 +97,7 @@ public class PhaseVocoder {
 		return output;
 	}
 
+	@Override
 	public double[] getCurrentFftFrame(){
 		return spec1;
 	}

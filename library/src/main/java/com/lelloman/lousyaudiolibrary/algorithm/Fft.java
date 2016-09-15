@@ -6,6 +6,7 @@ import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 
 public class Fft {
+
 	static {
 		System.loadLibrary("mylib");
 	}
@@ -16,8 +17,8 @@ public class Fft {
 	ByteBuffer byteBuffer;
 
 	public Fft(int size){
-		this.size = size;
 
+		this.size = size;
 		int nativeBufferSize = Double.BYTES * size;
 		byteBuffer = ByteBuffer.allocateDirect(nativeBufferSize);
 		byteBuffer.order(ByteOrder.nativeOrder());
@@ -27,9 +28,20 @@ public class Fft {
 	public void realForward(double[] data){
 		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
 		doubleBuffer.put(data);
-		dummy(byteBuffer, size);
+
+		forward(byteBuffer, size);
 		byteBuffer.asDoubleBuffer().get(data);
 	}
 
+	public void realInverse(double[] data){
+		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
+		doubleBuffer.put(data);
+
+		inverse(byteBuffer, size);
+		byteBuffer.asDoubleBuffer().get(data);
+	}
+
+	private native void forward(ByteBuffer byteBuffer, int size);
+	private native void inverse(ByteBuffer byteBuffer, int size);
 	private native void dummy(ByteBuffer byteBuffer, int size);
 }

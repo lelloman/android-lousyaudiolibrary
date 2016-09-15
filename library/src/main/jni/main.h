@@ -15,6 +15,13 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_dummy
   (JNIEnv *, jobject, jobject, jint);
 
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward(JNIEnv *, jobject, jobject, jint);
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *, jobject, jobject, jint);
+
+void reverseBit(double* arr,int size);
+void swap(double* arr,int a, int b);
+void fft(double* pcm,int size, int sinal);
+
 #ifdef __cplusplus
 }
 #endif
