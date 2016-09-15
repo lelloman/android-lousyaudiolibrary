@@ -1,5 +1,6 @@
-package com.lelloman.lousyaudiolibrary;
+package com.lelloman.lousyaudiolibrary.algorithm;
 
+import com.lelloman.lousyaudiolibrary.BufferManager;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import org.jtransforms.fft.DoubleFFT_1D;

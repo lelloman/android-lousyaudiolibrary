@@ -1,6 +1,6 @@
 package com.lelloman.lousyaudiolibrary.player;
 
-import com.lelloman.lousyaudiolibrary.PhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.PhaseVocoder;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.nio.ByteBuffer;

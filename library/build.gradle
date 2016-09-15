@@ -13,6 +13,11 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "0.1.1"
+        ndk {
+            moduleName "mylib"
+            cFlags "-std=c99"
+            ldLibs "log"
+        }
     }
     buildTypes {
         release {
