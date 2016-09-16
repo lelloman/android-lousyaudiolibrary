@@ -55,6 +55,16 @@ public class PhaseVocoder implements IPhaseVocoder {
 	}
 
 	@Override
+	public int getH() {
+		return H;
+	}
+
+	@Override
+	public int getN() {
+		return N;
+	}
+
+	@Override
 	public void setScale(double v) {
 		this.tscale = v;
 		int stepSize = (int) (H * tscale);
