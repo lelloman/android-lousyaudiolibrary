@@ -57,6 +57,7 @@ public class DummyAudioReader implements IAudioReader {
 		for(int i=0;i<bufferSize;i++){
 			doubleBuffer[i] = Math.sin(cursor++ * phaseStep) * amplitude;
 		}
+
 		return doubleBuffer;
 	}
 
