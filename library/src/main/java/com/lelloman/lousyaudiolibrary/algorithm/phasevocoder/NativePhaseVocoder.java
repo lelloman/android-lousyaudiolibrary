@@ -4,8 +4,6 @@ import com.lelloman.lousyaudiolibrary.BufferManager;
 import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
-import org.jtransforms.fft.DoubleFFT_1D;
-
 
 public class NativePhaseVocoder implements IPhaseVocoder {
 
@@ -23,7 +21,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private double[] buffer;
 	private double[] output;// = new double[H];
 	private Fft fft;// = new DoubleFFT_1D(N);
-	private DoubleFFT_1D jfft;
 
 	private IAudioReader audioReader;
 	private BufferManager manager;
@@ -45,7 +42,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		spec2 = new double[N2];
 		sigout = new double[N];
 		fft = new Fft(N2);
-		jfft = new DoubleFFT_1D(N);
 		output = new double[H];
 
 		win = new double[N];
@@ -86,9 +82,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		for (int i = 0; i < N2; i++)
 			spec2[i] = Math.abs(spec2[i]) * out[i];
 
-
-		jfft.realInverse(spec2, true);
-	//	fft.realInverse(spec2);
+		fft.realInverse(spec2);
 
 		for (int i = 0; i < N; i++)
 			sigout[i] += win[i] * spec2[i];

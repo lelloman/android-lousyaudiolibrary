@@ -37,11 +37,11 @@ public class Fft {
 		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
 		doubleBuffer.put(data);
 
-		inverse(byteBuffer, size);
+		inverse(byteBuffer, size, true);
 		byteBuffer.asDoubleBuffer().get(data);
 	}
 
 	private native void forward(ByteBuffer byteBuffer, int size);
-	private native void inverse(ByteBuffer byteBuffer, int size);
+	private native void inverse(ByteBuffer byteBuffer, int size, boolean scale);
 	private native void dummy(ByteBuffer byteBuffer, int size);
 }

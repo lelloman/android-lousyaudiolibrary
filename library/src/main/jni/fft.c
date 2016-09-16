@@ -8,7 +8,7 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,    "JNI_DEBUGGING", __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN,    "JNI_DEBUGGING", __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,   "JNI_DEBUGGING", __VA_ARGS__)
-#include "main.h"
+#include "fft.h"
 
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_dummy
@@ -26,11 +26,18 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward
     fft(data, size/2,1);
 }
 
-JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size){
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size, jboolean scale){
     double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
 
     reverseBit(data, size/2);
     fft(data, size/2,-1);
+
+    if(scale) {
+        double factor = size/2;
+        for (int i = 0; i < size; i++) {
+            data[i] /= factor;
+        }
+    }
 }
 
 void reverseBit(double* arr,int size){
