@@ -149,11 +149,6 @@ public class AudioPlayer implements Runnable {
 		this.currentMs = reader.getCurrentMs();
 	}
 
-	public void seek(long pos) {
-		reader.seek(pos);
-		updateCurrentPosition();
-	}
-
 	public void seek(double percent) {
 		reader.seek(percent);
 		updateCurrentPosition();

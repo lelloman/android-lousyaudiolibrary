@@ -78,14 +78,6 @@ public class BufferedAudioPlayer extends AudioPlayer {
 	}
 
 	@Override
-	public void seek(long pos) {
-		super.seek(pos);
-		synchronized (buffer){
-			buffer.clear();
-		}
-	}
-
-	@Override
 	public void seek(double percent) {
 		super.seek(percent);
 		synchronized (buffer){
