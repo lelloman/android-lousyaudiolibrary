@@ -29,7 +29,7 @@ public class Fft {
 		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
 		doubleBuffer.put(data);
 
-		forward(byteBuffer, size);
+		forward(byteBuffer, size/2);
 		byteBuffer.asDoubleBuffer().get(data);
 	}
 
@@ -37,7 +37,7 @@ public class Fft {
 		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
 		doubleBuffer.put(data);
 
-		inverse(byteBuffer, size, true);
+		inverse(byteBuffer, size/2, true);
 		byteBuffer.asDoubleBuffer().get(data);
 	}
 

@@ -12,8 +12,7 @@ import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
-import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
-import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
+import com.lelloman.lousyaudiolibrary.reader.AudioReader;
 import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
 import com.lelloman.lousyaudiolibrary.view.CompoundVolumeView;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
@@ -90,8 +89,8 @@ public class PlayerFragment extends Fragment implements
 		player = new SlowAudioPlayer(playerListener);
 
 		try {
-			//AudioReader audioReader = new AudioReader(getActivity(), resId);
-			IAudioReader audioReader = new DummyAudioReader(44100 * 10, 44100, 440,0,4096);
+			AudioReader audioReader = new AudioReader(getActivity(), resId);
+			//IAudioReader audioReader = new DummyAudioReader(44100 * 10, 44100, 440,0,4096);
 			if (player.init(audioReader)) {
 				player.start();
 				int width = getResources().getDisplayMetrics().widthPixels;
@@ -105,8 +104,8 @@ public class PlayerFragment extends Fragment implements
 						tot*4,
 						tot*6
 				};
-				//volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
-				volumeReader = new VolumeReader(new DummyAudioReader(44100 * 10, 44100, 440,0,4096), intervals);
+				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
+				//volumeReader = new VolumeReader(new DummyAudioReader(44100 * 10, 44100, 440,0,4096), intervals);
 			} else {
 				throw new Exception("mboh");
 			}

@@ -21,6 +21,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private double[] buffer;
 	private double[] output;// = new double[H];
 	private Fft fft;// = new DoubleFFT_1D(N);
+//	DoubleFFT_1D jfft;
 
 	private IAudioReader audioReader;
 	private BufferManager manager;
@@ -42,6 +43,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		spec2 = new double[N2];
 		sigout = new double[N];
 		fft = new Fft(N2);
+		//jfft = new DoubleFFT_1D(N);
 		output = new double[H];
 
 		win = new double[N];
@@ -93,6 +95,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 			spec2[i] = Math.abs(spec2[i]) * out[i];
 
 		fft.realInverse(spec2);
+		//jfft.realInverse(spec2, true);
 
 		for (int i = 0; i < N; i++)
 			sigout[i] += win[i] * spec2[i];
@@ -113,6 +116,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 			spec[i] = 0;
 
 		fft.realForward(spec);
+		//jfft.realForward(spec);
 	}
 
 	private void makePhi() {
