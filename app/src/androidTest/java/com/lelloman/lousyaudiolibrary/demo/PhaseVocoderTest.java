@@ -20,7 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 
-public class ExampleUnitTest {
+public class PhaseVocoderTest {
 
 	@Rule
 	public ActivityTestRule<VocoderTestActivity> mActivityRule = new ActivityTestRule<>(VocoderTestActivity.class);
@@ -36,6 +36,9 @@ public class ExampleUnitTest {
 		IAudioReader javaReader = makeDummyAudioReader(440, 30);
 		PhaseVocoder javaVocoder = new PhaseVocoder(javaReader, tscale,N, H);
 
+		IAudioReader nativeReaderOld = makeDummyAudioReader(440, 30);
+		NativePhaseVocoderOld nativeVocoderOld = new NativePhaseVocoderOld(nativeReaderOld, tscale, N, H);
+
 		IAudioReader nativeReader = makeDummyAudioReader(440, 30);
 		NativePhaseVocoder nativeVocoder = new NativePhaseVocoder(nativeReader, tscale, N, H);
 
@@ -44,14 +47,23 @@ public class ExampleUnitTest {
 			javaVocoder.next();
 		}
 		long duration = SystemClock.elapsedRealtimeNanos() - start;
-		Log.d(ExampleUnitTest.class.getSimpleName(), String.format("elapsed java vocoder = %s", duration));
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed java vocoder = %s", duration));
+
+
+		start = SystemClock.elapsedRealtimeNanos();
+		while(!nativeReaderOld.getSawOutputEOS()){
+			nativeVocoderOld.next();
+		}
+		duration = SystemClock.elapsedRealtimeNanos() - start;
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed natives vocoderOld = %s", duration));
+
 
 		start = SystemClock.elapsedRealtimeNanos();
 		while(!nativeReader.getSawOutputEOS()){
 			nativeVocoder.next();
 		}
 		duration = SystemClock.elapsedRealtimeNanos() - start;
-		Log.d(ExampleUnitTest.class.getSimpleName(), String.format("elapsed natives vocoder = %s", duration));
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed natives vocoder = %s", duration));
 	}
 
 	private DummyAudioReader makeDummyAudioReader(int frequency, int seconds){
@@ -69,7 +81,7 @@ public class ExampleUnitTest {
 			IAudioReader reader = makeDummyAudioReader(expected, 2);
 			IPhaseVocoder vocoder = new PhaseVocoder(reader, tscale, N, H);
 			double actual = testVocoderWithFrequency(vocoder, reader);
-			Log.d(ExampleUnitTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() java expected = %s actual = %.2f", expected, actual));
+			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() java expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
 		}
 
@@ -78,7 +90,7 @@ public class ExampleUnitTest {
 			IAudioReader reader = makeDummyAudioReader(expected, 2);
 			IPhaseVocoder vocoder = new NativePhaseVocoderOld(reader, tscale, N, H);
 			double actual = testVocoderWithFrequency(vocoder, reader);
-			Log.d(ExampleUnitTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native old expected = %s actual = %.2f", expected, actual));
+			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native old expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
 		}
 
@@ -87,7 +99,7 @@ public class ExampleUnitTest {
 			IAudioReader reader = makeDummyAudioReader(expected, 2);
 			IPhaseVocoder vocoder = new NativePhaseVocoder(reader, tscale, N, H);
 			double actual = testVocoderWithFrequency(vocoder, reader);
-			Log.d(ExampleUnitTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native expected = %s actual = %.2f", expected, actual));
+			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
 		}
 
