@@ -123,14 +123,13 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	//	makePhi();
 	//	makeOut();
 
-		for (int i = 0; i < N2; i++)
-			spec2[i] = Math.abs(spec2[i]) * out[i];
+	//	for (int i = 0; i < N2; i++)
+	//		spec2[i] = Math.abs(spec2[i]) * out[i];
 
-		fft.realInverse(spec2);
-		//jfft.realInverse(spec2, true);
+	//	fft.realInverse(spec2);
 
-		for (int i = 0; i < N; i++)
-			sigout[i] += win[i] * spec2[i];
+		//for (int i = 0; i < N; i++)
+		//	sigout[i] += win[i] * spec2[i];
 
 		System.arraycopy(sigout, 0, output, 0, H);
 		return output;

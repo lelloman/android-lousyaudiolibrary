@@ -26,6 +26,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
     int halfN = specSize / 4;
     int N = halfN * 2;
     int size = N;
+    int N2 = N*2;
     int H = offset;
     int NmH = N-H;
 
@@ -81,4 +82,22 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         out[i21] = sin(p);
     }
 
+    for (int i = 0; i < N2; i++) {
+        double v = spec2[i];
+        if(v < 0){
+            v *= -1;
+        }
+        spec2[i] = v * out[i];
+    }
+
+    reverseBit(spec2, N);
+    fft(spec2, N, -1);
+
+    double factor = size/4;
+    for (int i = 0; i < size; i++) {
+        spec2[i] /= factor;
+    }
+
+    for (int i = 0; i < N; i++)
+        sigout[i] += window[i] * spec2[i];
 }
