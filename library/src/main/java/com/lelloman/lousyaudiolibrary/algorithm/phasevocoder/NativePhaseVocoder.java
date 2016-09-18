@@ -18,11 +18,14 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private double[] phi;// = new double[N];
 	private ByteBuffer phiNio;
 	private double[] out;// = new double[N*2]; // complex
+	private ByteBuffer outNio;
 	private double[] spec1;// = new double[N*2]; // complex
 	private double[] spec2;// = new double[N*2]; // complex
 	private ByteBuffer specNio1;
 	private ByteBuffer specNio2;
 	private double[] sigout;// = new double[(int) (L / tscale+N)];
+	private ByteBuffer sigoutNio;
+
 	private double[] win;// = new double[N];
 	private ByteBuffer windowNio;
 	private double[] buffer;
@@ -50,6 +53,9 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		phiNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N);
 		phiNio.order(ByteOrder.nativeOrder());
 		out = new double[N2];
+		outNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
+		outNio.order(ByteOrder.nativeOrder());
+
 		spec1 = new double[N2];
 		spec2 = new double[N2];
 		specNio1 = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
@@ -57,6 +63,9 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		specNio2 = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
 		specNio2.order(ByteOrder.nativeOrder());
 		sigout = new double[N];
+		sigoutNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N);
+		sigoutNio.order(ByteOrder.nativeOrder());
+
 		fft = new Fft(N2);
 		output = new double[H];
 
@@ -103,16 +112,14 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		bufferNio.position(0);
 		bufferNio.asDoubleBuffer().put(buffer);
 
-		for (int i = 0; i < NmH; i++)
-			sigout[i] = sigout[i + H];
-		for (int i = NmH; i < N; i++)
-			sigout[i] = 0;
+		sigoutNio.asDoubleBuffer().put(sigout);
 
-		makeSpec(bufferNio, specNio1, specNio2, phiNio, windowNio, N2, H);
+		makeSpec(bufferNio, specNio1, specNio2, phiNio, sigoutNio, windowNio, N2, H);
 
 		specNio1.asDoubleBuffer().get(spec1);
 		specNio2.asDoubleBuffer().get(spec2);
 		phiNio.asDoubleBuffer().get(phi);
+		sigoutNio.asDoubleBuffer().get(sigout);
 
 	//	makePhi();
 		makeOut();
@@ -135,7 +142,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		return spec1;
 	}
 
-	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer phiNio, ByteBuffer window, int specSize, int offset);
+	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer sigout, ByteBuffer phiNio, ByteBuffer window, int specSize, int offset);
 
 	/*private void makePhi() {
 		for (int i = 0; i < phi.length; i++) {

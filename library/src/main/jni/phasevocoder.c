@@ -13,17 +13,26 @@ static const double PI = 3.141592653589793;
 static const double PI2 = 6.283185307179586;
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_makeSpec
-        (JNIEnv * env, jobject thiz, jobject bufferNio, jobject specNio1, jobject specNio2, jobject phiNio, jobject windowNio, jint specSize, jint offset){
+        (JNIEnv * env, jobject thiz, jobject bufferNio, jobject specNio1, jobject specNio2, jobject phiNio, jobject sigoutNio, jobject windowNio, jint specSize, jint offset){
 
     double* buffer = (double*) (*env)->GetDirectBufferAddress(env,bufferNio);
     double* spec1 = (double*) (*env)->GetDirectBufferAddress(env,specNio1);
     double* spec2 = (double*) (*env)->GetDirectBufferAddress(env,specNio2);
     double* window = (double*) (*env)->GetDirectBufferAddress(env,windowNio);
     double* phi = (double*) (*env)->GetDirectBufferAddress(env,phiNio);
+    double* sigout = (double*) (*env)->GetDirectBufferAddress(env,sigoutNio);
 
     int halfN = specSize / 4;
     int N = halfN * 2;
     int size = N;
+    int H = offset;
+    int NmH = N-H;
+
+
+    for (int i = 0; i < NmH; i++)
+        sigout[i] = sigout[i + H];
+    for (int i = NmH; i < N; i++)
+        sigout[i] = 0;
 
     for(int i=0;i<halfN;i++){
         spec1[i] = window[i] * buffer[i + offset];
@@ -59,4 +68,5 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         while (p > PI) p -= PI2;
         phi[i] = p;
     }
+
 }
