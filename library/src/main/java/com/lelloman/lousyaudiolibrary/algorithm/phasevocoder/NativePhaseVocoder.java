@@ -97,7 +97,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		slow = v < .99;
 	}
 
-	@Override
 	public double[] next() {
 
 		buffer = manager.next();
@@ -110,26 +109,11 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		}
 		bufferNio.position(0);
 		bufferNio.asDoubleBuffer().put(buffer);
-		sigoutNio.asDoubleBuffer().put(sigout);
 
-		makeSpec(bufferNio, specNio1, specNio2, phiNio, sigoutNio, outNio, windowNio, N2, H);
+		next(bufferNio, specNio1, specNio2, phiNio, sigoutNio, outNio, windowNio, N2, H);
 
-	//	specNio1.asDoubleBuffer().get(spec1);
-		specNio2.asDoubleBuffer().get(spec2);
-		phiNio.asDoubleBuffer().get(phi);
 		sigoutNio.asDoubleBuffer().get(sigout);
-		outNio.asDoubleBuffer().get(out);
 
-	//	makePhi();
-	//	makeOut();
-
-	//	for (int i = 0; i < N2; i++)
-	//		spec2[i] = Math.abs(spec2[i]) * out[i];
-
-	//	fft.realInverse(spec2);
-
-		//for (int i = 0; i < N; i++)
-		//	sigout[i] += win[i] * spec2[i];
 
 		System.arraycopy(sigout, 0, output, 0, H);
 		return output;
@@ -140,34 +124,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		return spec1;
 	}
 
-	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer phiNio, ByteBuffer sigout, ByteBuffer outNio, ByteBuffer window, int specSize, int offset);
+	private native void next(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer phiNio, ByteBuffer sigout, ByteBuffer outNio, ByteBuffer window, int specSize, int offset);
 
-	/*private void makePhi() {
-		for (int i = 0; i < phi.length; i++) {
-			int i2 = i * 2;
-			int i21 = i2 + 1;
-
-			double a1 = spec1[i2];
-			double b1 = spec1[i21];
-			double a2 = spec2[i2];
-			double b2 = spec2[i21];
-
-			double p = phi[i] + (Math.atan2(b2, a2) - Math.atan2(b1, a1));
-			while (p < -Math.PI) p += PI2;
-			while (p > Math.PI) p -= PI2;
-			phi[i] = p;
-		}
-	}*/
-
-	// lol
-	private void makeOut() {
-		for (int i = 0; i < phi.length; i++) {
-			int i2 = i * 2;
-			int i21 = i2 + 1;
-
-			double p = phi[i];
-			out[i2] = Math.cos(p);
-			out[i21] = Math.sin(p);
-		}
-	}
 }
