@@ -15,7 +15,7 @@ extern "C" {
  * Signature: (Ljava/nio/DoubleBuffer;Ljava/nio/DoubleBuffer;Ljava/nio/DoubleBuffer;II)V
  */
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_makeSpec
-        (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jint, jint);
+        (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jint, jint);
 
 #ifdef __cplusplus
 }

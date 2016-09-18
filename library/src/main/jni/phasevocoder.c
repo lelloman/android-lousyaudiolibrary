@@ -13,7 +13,7 @@ static const double PI = 3.141592653589793;
 static const double PI2 = 6.283185307179586;
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_makeSpec
-        (JNIEnv * env, jobject thiz, jobject bufferNio, jobject specNio1, jobject specNio2, jobject phiNio, jobject sigoutNio, jobject windowNio, jint specSize, jint offset){
+        (JNIEnv * env, jobject thiz, jobject bufferNio, jobject specNio1, jobject specNio2, jobject phiNio, jobject sigoutNio, jobject outNio, jobject windowNio, jint specSize, jint offset){
 
     double* buffer = (double*) (*env)->GetDirectBufferAddress(env,bufferNio);
     double* spec1 = (double*) (*env)->GetDirectBufferAddress(env,specNio1);
@@ -21,6 +21,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
     double* window = (double*) (*env)->GetDirectBufferAddress(env,windowNio);
     double* phi = (double*) (*env)->GetDirectBufferAddress(env,phiNio);
     double* sigout = (double*) (*env)->GetDirectBufferAddress(env,sigoutNio);
+    double* out = (double*) (*env)->GetDirectBufferAddress(env,outNio);
 
     int halfN = specSize / 4;
     int N = halfN * 2;
@@ -54,6 +55,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
     reverseBit(spec2, size);
     fft(spec2, size,1);
 
+    // makePhi
     for(int i=0;i<N;i++){
         int i2 = i*2;
         int i21 = i2 + 1;
@@ -67,6 +69,16 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         while (p < -PI) p += PI2;
         while (p > PI) p -= PI2;
         phi[i] = p;
+    }
+
+    // makeOut lol
+    for (int i = 0; i < N; i++) {
+        int i2 = i * 2;
+        int i21 = i2 + 1;
+
+        double p = phi[i];
+        out[i2] = cos(p);
+        out[i21] = sin(p);
     }
 
 }

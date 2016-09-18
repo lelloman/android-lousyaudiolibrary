@@ -33,7 +33,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private int bufferNioSize;
 	private double[] output;// = new double[H];
 	private Fft fft;// = new DoubleFFT_1D(N);
-//	DoubleFFT_1D jfft;
 
 	private IAudioReader audioReader;
 	private BufferManager manager;
@@ -111,18 +110,18 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		}
 		bufferNio.position(0);
 		bufferNio.asDoubleBuffer().put(buffer);
-
 		sigoutNio.asDoubleBuffer().put(sigout);
 
-		makeSpec(bufferNio, specNio1, specNio2, phiNio, sigoutNio, windowNio, N2, H);
+		makeSpec(bufferNio, specNio1, specNio2, phiNio, sigoutNio, outNio, windowNio, N2, H);
 
-		specNio1.asDoubleBuffer().get(spec1);
+	//	specNio1.asDoubleBuffer().get(spec1);
 		specNio2.asDoubleBuffer().get(spec2);
 		phiNio.asDoubleBuffer().get(phi);
 		sigoutNio.asDoubleBuffer().get(sigout);
+		outNio.asDoubleBuffer().get(out);
 
 	//	makePhi();
-		makeOut();
+	//	makeOut();
 
 		for (int i = 0; i < N2; i++)
 			spec2[i] = Math.abs(spec2[i]) * out[i];
@@ -142,7 +141,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		return spec1;
 	}
 
-	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer sigout, ByteBuffer phiNio, ByteBuffer window, int specSize, int offset);
+	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer phiNio, ByteBuffer sigout, ByteBuffer outNio, ByteBuffer window, int specSize, int offset);
 
 	/*private void makePhi() {
 		for (int i = 0; i < phi.length; i++) {
