@@ -19,7 +19,7 @@ public class Fft {
 	public Fft(int size){
 
 		this.size = size;
-		int nativeBufferSize = Double.BYTES * size;
+		int nativeBufferSize = Double.SIZE / 8 * size;
 		byteBuffer = ByteBuffer.allocateDirect(nativeBufferSize);
 		byteBuffer.order(ByteOrder.nativeOrder());
 

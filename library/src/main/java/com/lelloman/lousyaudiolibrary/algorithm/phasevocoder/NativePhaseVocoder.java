@@ -16,10 +16,12 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private int N, H, N2, halfN, NmH;
 
 	private double[] phi;// = new double[N];
+	private ByteBuffer phiNio;
 	private double[] out;// = new double[N*2]; // complex
 	private double[] spec1;// = new double[N*2]; // complex
 	private double[] spec2;// = new double[N*2]; // complex
-	private ByteBuffer specNio;
+	private ByteBuffer specNio1;
+	private ByteBuffer specNio2;
 	private double[] sigout;// = new double[(int) (L / tscale+N)];
 	private double[] win;// = new double[N];
 	private ByteBuffer windowNio;
@@ -45,14 +47,17 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		halfN = N / 2;
 		NmH = N - H;
 		phi = new double[N];
+		phiNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N);
+		phiNio.order(ByteOrder.nativeOrder());
 		out = new double[N2];
 		spec1 = new double[N2];
 		spec2 = new double[N2];
-		specNio = ByteBuffer.allocateDirect(Double.BYTES * N2);
-		specNio.order(ByteOrder.nativeOrder());
+		specNio1 = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
+		specNio1.order(ByteOrder.nativeOrder());
+		specNio2 = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
+		specNio2.order(ByteOrder.nativeOrder());
 		sigout = new double[N];
 		fft = new Fft(N2);
-		//jfft = new DoubleFFT_1D(N);
 		output = new double[H];
 
 		win = new double[N];
@@ -61,7 +66,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 			double k = 1 - Math.cos(j);
 			win[i] = .5 * k;
 		}
-		windowNio = ByteBuffer.allocateDirect(Double.BYTES * N);
+		windowNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N);
 		windowNio.order(ByteOrder.nativeOrder());
 		windowNio.asDoubleBuffer().put(win);
 	}
@@ -91,7 +96,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		if (buffer == null) return null;
 
 		if(buffer.length != bufferNioSize || bufferNio == null){
-			bufferNio = ByteBuffer.allocateDirect(Double.BYTES * buffer.length);
+			bufferNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * buffer.length);
 			bufferNio.order(ByteOrder.nativeOrder());
 			bufferNioSize = buffer.length;
 		}
@@ -103,21 +108,13 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		for (int i = NmH; i < N; i++)
 			sigout[i] = 0;
 
-	//	makeSpec(spec1, 0);
-	//	makeSpec(spec2, H);
-		specNio.position(0);
-		specNio.asDoubleBuffer().put(spec1);
-		makeSpec(bufferNio, specNio, windowNio, spec1.length,0);
-		specNio.position(0);
-		specNio.asDoubleBuffer().get(spec1);
+		makeSpec(bufferNio, specNio1, specNio2, phiNio, windowNio, N2, H);
 
-		specNio.position(0);
-		specNio.asDoubleBuffer().put(spec2);
-		makeSpec(bufferNio, specNio, windowNio, spec1.length,H);
-		specNio.position(0);
-		specNio.asDoubleBuffer().get(spec2);
+		specNio1.asDoubleBuffer().get(spec1);
+		specNio2.asDoubleBuffer().get(spec2);
+		phiNio.asDoubleBuffer().get(phi);
 
-		makePhi();
+	//	makePhi();
 		makeOut();
 
 		for (int i = 0; i < N2; i++)
@@ -138,9 +135,9 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		return spec1;
 	}
 
-	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec, ByteBuffer window, int specSize, int offset);
+	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer phiNio, ByteBuffer window, int specSize, int offset);
 
-	private void makePhi() {
+	/*private void makePhi() {
 		for (int i = 0; i < phi.length; i++) {
 			int i2 = i * 2;
 			int i21 = i2 + 1;
@@ -155,7 +152,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 			while (p > Math.PI) p -= PI2;
 			phi[i] = p;
 		}
-	}
+	}*/
 
 	// lol
 	private void makeOut() {
