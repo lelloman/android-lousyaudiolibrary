@@ -52,7 +52,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 			double k = 1 - Math.cos(j);
 			win[i] = .5 * k;
 		}
-
 	}
 
 	@Override

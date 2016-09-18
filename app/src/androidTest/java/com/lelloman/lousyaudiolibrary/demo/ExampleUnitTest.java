@@ -93,8 +93,6 @@ public class ExampleUnitTest {
 
 		while(!reader.getSawOutputEOS()) {
 			double[] frame = vocoder.next();
-			//Log.d(ExampleUnitTest.class.getSimpleName(), Arrays.toString(frame));
-			//Log.d(ExampleUnitTest.class.getSimpleName(), String.format("fram length %s H %s", frame.length, H));
 			fft.realForward(frame);
 			double max = 0;
 			int maxIndex = 0;
@@ -108,7 +106,6 @@ public class ExampleUnitTest {
 			double freq = maxIndex * resolution;
 			sum += freq;
 
-			//Log.d(ExampleUnitTest.class.getSimpleName(), String.format("max freq %s", freq));
 			count++;
 		}
 
