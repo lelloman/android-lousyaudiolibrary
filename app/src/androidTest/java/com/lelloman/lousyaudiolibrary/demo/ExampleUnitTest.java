@@ -9,6 +9,7 @@ import android.util.Log;
 import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.IPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderOld;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.PhaseVocoder;
 import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
@@ -69,6 +70,15 @@ public class ExampleUnitTest {
 			IPhaseVocoder vocoder = new PhaseVocoder(reader, tscale, N, H);
 			double actual = testVocoderWithFrequency(vocoder, reader);
 			Log.d(ExampleUnitTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() java expected = %s actual = %.2f", expected, actual));
+			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
+		}
+
+		for(int i=0;i<7;i++) {
+			int expected = 55 << i;
+			IAudioReader reader = makeDummyAudioReader(expected, 2);
+			IPhaseVocoder vocoder = new NativePhaseVocoderOld(reader, tscale, N, H);
+			double actual = testVocoderWithFrequency(vocoder, reader);
+			Log.d(ExampleUnitTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native old expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
 		}
 

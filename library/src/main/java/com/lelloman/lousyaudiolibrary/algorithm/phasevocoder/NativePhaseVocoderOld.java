@@ -4,11 +4,8 @@ import com.lelloman.lousyaudiolibrary.BufferManager;
 import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
-
-public class NativePhaseVocoder implements IPhaseVocoder {
+public class NativePhaseVocoderOld implements IPhaseVocoder {
 
 	public static final double PI2 = Math.PI * 2;
 
@@ -19,13 +16,9 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private double[] out;// = new double[N*2]; // complex
 	private double[] spec1;// = new double[N*2]; // complex
 	private double[] spec2;// = new double[N*2]; // complex
-	private ByteBuffer specNio;
 	private double[] sigout;// = new double[(int) (L / tscale+N)];
 	private double[] win;// = new double[N];
-	private ByteBuffer windowNio;
 	private double[] buffer;
-	private ByteBuffer bufferNio;
-	private int bufferNioSize;
 	private double[] output;// = new double[H];
 	private Fft fft;// = new DoubleFFT_1D(N);
 //	DoubleFFT_1D jfft;
@@ -34,7 +27,7 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private BufferManager manager;
 	private boolean slow;
 
-	public NativePhaseVocoder(IAudioReader reader, double tscale, int N, int H) {
+	public NativePhaseVocoderOld(IAudioReader reader, double tscale, int N, int H) {
 
 		this.audioReader = reader;
 		this.N = N;
@@ -48,8 +41,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		out = new double[N2];
 		spec1 = new double[N2];
 		spec2 = new double[N2];
-		specNio = ByteBuffer.allocateDirect(Double.BYTES * N2);
-		specNio.order(ByteOrder.nativeOrder());
 		sigout = new double[N];
 		fft = new Fft(N2);
 		//jfft = new DoubleFFT_1D(N);
@@ -61,9 +52,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 			double k = 1 - Math.cos(j);
 			win[i] = .5 * k;
 		}
-		windowNio = ByteBuffer.allocateDirect(Double.BYTES * N);
-		windowNio.order(ByteOrder.nativeOrder());
-		windowNio.asDoubleBuffer().put(win);
 	}
 
 	@Override
@@ -90,32 +78,14 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		buffer = manager.next();
 		if (buffer == null) return null;
 
-		if(buffer.length != bufferNioSize || bufferNio == null){
-			bufferNio = ByteBuffer.allocateDirect(Double.BYTES * buffer.length);
-			bufferNio.order(ByteOrder.nativeOrder());
-			bufferNioSize = buffer.length;
-		}
-		bufferNio.position(0);
-		bufferNio.asDoubleBuffer().put(buffer);
 
 		for (int i = 0; i < NmH; i++)
 			sigout[i] = sigout[i + H];
 		for (int i = NmH; i < N; i++)
 			sigout[i] = 0;
 
-	//	makeSpec(spec1, 0);
-	//	makeSpec(spec2, H);
-		specNio.position(0);
-		specNio.asDoubleBuffer().put(spec1);
-		makeSpec(bufferNio, specNio, windowNio, spec1.length,0);
-		specNio.position(0);
-		specNio.asDoubleBuffer().get(spec1);
-
-		specNio.position(0);
-		specNio.asDoubleBuffer().put(spec2);
-		makeSpec(bufferNio, specNio, windowNio, spec1.length,H);
-		specNio.position(0);
-		specNio.asDoubleBuffer().get(spec2);
+		makeSpec(spec1, 0);
+		makeSpec(spec2, H);
 
 		makePhi();
 		makeOut();
@@ -138,7 +108,15 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		return spec1;
 	}
 
-	private native void makeSpec(ByteBuffer bufferNio, ByteBuffer spec, ByteBuffer window, int specSize, int offset);
+	private void makeSpec(double[] spec, int offset) {
+		for (int i = 0; i < halfN; i++)
+			spec[i] = win[i] * buffer[i + offset];
+		for (int i = halfN; i < N; i++)
+			spec[i] = 0;
+
+		fft.realForward(spec);
+		//jfft.realForward(spec);
+	}
 
 	private void makePhi() {
 		for (int i = 0; i < phi.length; i++) {
