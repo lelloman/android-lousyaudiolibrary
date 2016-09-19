@@ -44,4 +44,6 @@ public class Fft {
 	private native void forward(ByteBuffer byteBuffer, int size);
 	private native void inverse(ByteBuffer byteBuffer, int size, boolean scale);
 	private native void dummy(ByteBuffer byteBuffer, int size);
+	public native void testArrayCopySingleThread(int size, int iterations);
+	public native void testArrayCopyMultiThread(int size, int iterations);
 }

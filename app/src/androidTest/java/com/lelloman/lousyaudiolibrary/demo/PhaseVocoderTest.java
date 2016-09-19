@@ -25,6 +25,24 @@ public class PhaseVocoderTest {
 	@Rule
 	public ActivityTestRule<VocoderTestActivity> mActivityRule = new ActivityTestRule<>(VocoderTestActivity.class);
 
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+	@Test
+	public void nativeArrayCopyPerformanceTest(){
+		Fft fft = new Fft(8);
+
+		int SIZE = 1 << 24;
+		int ITERATIONS = 1 << 2;
+
+		long start = SystemClock.elapsedRealtimeNanos();
+		fft.testArrayCopySingleThread(SIZE, ITERATIONS);
+		long duration = SystemClock.elapsedRealtimeNanos() - start;
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("array copy single thread duration %s", duration));
+
+		start = SystemClock.elapsedRealtimeNanos();
+		fft.testArrayCopyMultiThread(SIZE, ITERATIONS);
+		duration = SystemClock.elapsedRealtimeNanos() - start;
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("array copy  multi thread duration %s", duration));
+	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test

@@ -2,13 +2,61 @@
 #include <math.h>
 
 #include <android/log.h>
+#include <malloc.h>
+#include <time.h>
+#include "test.h"
 
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, "JNI_DEBUGGING", __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,   "JNI_DEBUGGING", __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,    "JNI_DEBUGGING", __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN,    "JNI_DEBUGGING", __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,   "JNI_DEBUGGING", __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,   "FFT_JNI", __VA_ARGS__)
 #include "fft.h"
+
+
+int checkOk(int* data1, int* data2, int size){
+    for(int i=0;i<size;i++){
+        if(data1[i] != data2[i]){
+            return 0;
+        }
+    }
+    return 1;
+}
+/*
+ * Class:     com_lelloman_lousyaudiolibrary_algorithm_Fft
+ * Method:    testArrayCopySingleThread
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArrayCopySingleThread
+        (JNIEnv *env, jobject thiz, jint size, jint iterations){
+    int* data1 = malloc(sizeof(int) * size);
+    int* data2 = malloc(sizeof(int) * size);
+
+    clock_t start = clock();
+    for(int i=0;i<iterations;i++){
+        arrayCopySingleThread(data1, data2, size);
+    }
+    clock_t end = clock();
+    int ok = checkOk(data1, data2, size);
+    LOGE("array copy single ok %d time %d",ok, end-start);
+}
+
+/*
+ * Class:     com_lelloman_lousyaudiolibrary_algorithm_Fft
+ * Method:    testArrayCopyMultiThread
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArrayCopyMultiThread
+        (JNIEnv *env, jobject thiz, jint size, jint iterations){
+
+    int* data1 = malloc(sizeof(int) * size);
+    int* data2 = malloc(sizeof(int) * size);
+
+    clock_t start = clock();
+    for(int i=0;i<iterations;i++){
+        arrayCopyMultiThread(data1, data2, size);
+    }
+    clock_t end = clock();
+
+    int ok = checkOk(data1, data2, size);
+    LOGE("array copy  multi ok %d time %d",ok, end-start);
+}
 
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_dummy
@@ -28,6 +76,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size, jboolean scale){
     double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
+
 
     reverseBit(data, size);
     fft(data, size,-1);

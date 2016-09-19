@@ -18,6 +18,22 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_dummy
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward(JNIEnv *, jobject, jobject, jint);
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *, jobject, jobject, jint, jboolean);
 
+/*
+ * Class:     com_lelloman_lousyaudiolibrary_algorithm_Fft
+ * Method:    testArrayCopySingleThread
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArrayCopySingleThread
+        (JNIEnv *, jobject, jint, jint);
+
+/*
+ * Class:     com_lelloman_lousyaudiolibrary_algorithm_Fft
+ * Method:    testArrayCopyMultiThread
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArrayCopyMultiThread
+        (JNIEnv *, jobject, jint, jint);
+
 void reverseBit(double* arr,int size);
 void swap(double* arr,int a, int b);
 void fft(double* pcm,int size, int sinal);
