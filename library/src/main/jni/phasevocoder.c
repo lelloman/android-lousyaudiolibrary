@@ -37,7 +37,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         sigout[i] = 0;
 
     for(int i=0;i<halfN;i++){
-        spec1[i] = window[i] * buffer[i + offset];
+        spec1[i] = window[i] * buffer[i];
     }
     for(int i=halfN;i<N;i++){
         spec1[i] = 0;
