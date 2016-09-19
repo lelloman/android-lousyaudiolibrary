@@ -8,8 +8,6 @@ public interface IPhaseVocoder {
 
 	double[] next();
 
-	double[] getCurrentFftFrame();
-
 	int getH();
 
 	int getN();

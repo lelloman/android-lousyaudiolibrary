@@ -103,11 +103,6 @@ public class NativePhaseVocoderOld implements IPhaseVocoder {
 		return output;
 	}
 
-	@Override
-	public double[] getCurrentFftFrame(){
-		return spec1;
-	}
-
 	private void makeSpec(double[] spec, int offset) {
 		for (int i = 0; i < halfN; i++)
 			spec[i] = win[i] * buffer[i + offset];

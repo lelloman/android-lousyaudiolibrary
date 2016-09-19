@@ -1,7 +1,6 @@
 package com.lelloman.lousyaudiolibrary.algorithm.phasevocoder;
 
 import com.lelloman.lousyaudiolibrary.BufferManager;
-import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.nio.ByteBuffer;
@@ -15,12 +14,8 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private double tscale;
 	private int N, H, N2, halfN, NmH;
 
-	private double[] phi;// = new double[N];
 	private ByteBuffer phiNio;
-	private double[] out;// = new double[N*2]; // complex
 	private ByteBuffer outNio;
-	private double[] spec1;// = new double[N*2]; // complex
-	private double[] spec2;// = new double[N*2]; // complex
 	private ByteBuffer specNio1;
 	private ByteBuffer specNio2;
 	private double[] sigout;// = new double[(int) (L / tscale+N)];
@@ -32,7 +27,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 	private ByteBuffer bufferNio;
 	private int bufferNioSize;
 	private double[] output;// = new double[H];
-	private Fft fft;// = new DoubleFFT_1D(N);
 
 	private IAudioReader audioReader;
 	private BufferManager manager;
@@ -48,15 +42,12 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		N2 = N * 2;
 		halfN = N / 2;
 		NmH = N - H;
-		phi = new double[N];
+
 		phiNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N);
 		phiNio.order(ByteOrder.nativeOrder());
-		out = new double[N2];
 		outNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
 		outNio.order(ByteOrder.nativeOrder());
 
-		spec1 = new double[N2];
-		spec2 = new double[N2];
 		specNio1 = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
 		specNio1.order(ByteOrder.nativeOrder());
 		specNio2 = ByteBuffer.allocateDirect(Double.SIZE / 8 * N2);
@@ -65,7 +56,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 		sigoutNio = ByteBuffer.allocateDirect(Double.SIZE / 8 * N);
 		sigoutNio.order(ByteOrder.nativeOrder());
 
-		fft = new Fft(N2);
 		output = new double[H];
 
 		win = new double[N];
@@ -117,11 +107,6 @@ public class NativePhaseVocoder implements IPhaseVocoder {
 
 		System.arraycopy(sigout, 0, output, 0, H);
 		return output;
-	}
-
-	@Override
-	public double[] getCurrentFftFrame(){
-		return spec1;
 	}
 
 	private native void next(ByteBuffer bufferNio, ByteBuffer spec1, ByteBuffer spec2, ByteBuffer phiNio, ByteBuffer sigout, ByteBuffer outNio, ByteBuffer window, int specSize, int offset);
