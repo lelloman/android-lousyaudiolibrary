@@ -34,9 +34,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArr
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArrayCopyMultiThread
         (JNIEnv *, jobject, jint, jint);
 
-void reverseBit(double* arr,int size);
-void swap(double* arr,int a, int b);
-void fft(double* pcm,int size, int sinal);
+void fft(double*data, int size, int sinal);
 
 #ifdef __cplusplus
 }

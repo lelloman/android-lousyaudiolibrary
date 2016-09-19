@@ -42,7 +42,6 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
     for(int i=halfN;i<N;i++){
         spec1[i] = 0;
     }
-    reverseBit(spec1, size);
     fft(spec1, size,1);
 
 
@@ -53,7 +52,6 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         spec2[i] = 0;
     }
 
-    reverseBit(spec2, size);
     fft(spec2, size,1);
 
     // makePhi
@@ -90,7 +88,93 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         spec2[i] = v * out[i];
     }
 
-    reverseBit(spec2, N);
+    fft(spec2, N, -1);
+
+    double factor = size/4;
+    for (int i = 0; i < size; i++) {
+        spec2[i] /= factor;
+    }
+
+    for (int i = 0; i < N; i++)
+        sigout[i] += window[i] * spec2[i];
+}
+
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoderMultiThread_next__Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2II
+        (JNIEnv * env, jobject thiz, jobject bufferNio, jobject specNio1, jobject specNio2, jobject phiNio, jobject sigoutNio, jobject outNio, jobject windowNio, jint specSize, jint offset){
+
+    double* buffer = (double*) (*env)->GetDirectBufferAddress(env,bufferNio);
+    double* spec1 = (double*) (*env)->GetDirectBufferAddress(env,specNio1);
+    double* spec2 = (double*) (*env)->GetDirectBufferAddress(env,specNio2);
+    double* window = (double*) (*env)->GetDirectBufferAddress(env,windowNio);
+    double* phi = (double*) (*env)->GetDirectBufferAddress(env,phiNio);
+    double* sigout = (double*) (*env)->GetDirectBufferAddress(env,sigoutNio);
+    double* out = (double*) (*env)->GetDirectBufferAddress(env,outNio);
+
+    int halfN = specSize / 4;
+    int N = halfN * 2;
+    int size = N;
+    int N2 = N*2;
+    int H = offset;
+    int NmH = N-H;
+
+
+    for (int i = 0; i < NmH; i++)
+        sigout[i] = sigout[i + H];
+    for (int i = NmH; i < N; i++)
+        sigout[i] = 0;
+
+    for(int i=0;i<halfN;i++){
+        spec1[i] = window[i] * buffer[i];
+    }
+    for(int i=halfN;i<N;i++){
+        spec1[i] = 0;
+    }
+    fft(spec1, size,1);
+
+
+    for(int i=0;i<halfN;i++){
+        spec2[i] = window[i] * buffer[i + offset];
+    }
+    for(int i=halfN;i<N;i++){
+        spec2[i] = 0;
+    }
+
+    fft(spec2, size,1);
+
+    // makePhi
+    for(int i=0;i<N;i++){
+        int i2 = i*2;
+        int i21 = i2 + 1;
+
+        double a1 = spec1[i2];
+        double b1 = spec1[i21];
+        double a2 = spec2[i2];
+        double b2 = spec2[i21];
+
+        double p = phi[i] + (atan2(b2, a2) - atan2(b1, a1));
+        while (p < -PI) p += PI2;
+        while (p > PI) p -= PI2;
+        phi[i] = p;
+    }
+
+    // makeOut lol
+    for (int i = 0; i < N; i++) {
+        int i2 = i * 2;
+        int i21 = i2 + 1;
+
+        double p = phi[i];
+        out[i2] = cos(p);
+        out[i21] = sin(p);
+    }
+
+    for (int i = 0; i < N2; i++) {
+        double v = spec2[i];
+        if(v < 0){
+            v *= -1;
+        }
+        spec2[i] = v * out[i];
+    }
+
     fft(spec2, N, -1);
 
     double factor = size/4;

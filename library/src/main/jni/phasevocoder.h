@@ -7,14 +7,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#undef com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_PI2
-#define com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_PI2 6.283185307179586
 /*
  * Class:     com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder
  * Method:    makeSpec
  * Signature: (Ljava/nio/DoubleBuffer;Ljava/nio/DoubleBuffer;Ljava/nio/DoubleBuffer;II)V
  */
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_next__Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2II
+        (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jint, jint);
+
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoderMultiThread_next__Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2II
         (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jobject, jint, jint);
 
 #ifdef __cplusplus

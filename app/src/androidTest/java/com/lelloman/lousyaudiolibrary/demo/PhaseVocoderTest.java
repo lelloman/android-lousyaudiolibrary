@@ -9,6 +9,7 @@ import android.util.Log;
 import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.IPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderMultiThread;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderOld;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.PhaseVocoder;
 import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
@@ -52,20 +53,23 @@ public class PhaseVocoderTest {
 		double tscale = .5;
 
 		IAudioReader javaReader = makeDummyAudioReader(440, 30);
-		PhaseVocoder javaVocoder = new PhaseVocoder(javaReader, tscale,N, H);
+		IPhaseVocoder javaVocoder = new PhaseVocoder(javaReader, tscale,N, H);
 
 		IAudioReader nativeReaderOld = makeDummyAudioReader(440, 30);
-		NativePhaseVocoderOld nativeVocoderOld = new NativePhaseVocoderOld(nativeReaderOld, tscale, N, H);
+		IPhaseVocoder nativeVocoderOld = new NativePhaseVocoderOld(nativeReaderOld, tscale, N, H);
 
 		IAudioReader nativeReader = makeDummyAudioReader(440, 30);
-		NativePhaseVocoder nativeVocoder = new NativePhaseVocoder(nativeReader, tscale, N, H);
+		IPhaseVocoder nativeVocoder = new NativePhaseVocoder(nativeReader, tscale, N, H);
+
+		IAudioReader nativeReaderMulti = makeDummyAudioReader(440, 30);
+		IPhaseVocoder nativeVocoderMulti = new NativePhaseVocoderMultiThread(nativeReaderMulti, tscale, N, H);
 
 		long start = SystemClock.elapsedRealtimeNanos();
 		while(!javaReader.getSawOutputEOS()) {
 			javaVocoder.next();
 		}
 		long duration = SystemClock.elapsedRealtimeNanos() - start;
-		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed java vocoder = %s", duration));
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed       java  vocoder = %s", duration));
 
 
 		start = SystemClock.elapsedRealtimeNanos();
@@ -73,7 +77,7 @@ public class PhaseVocoderTest {
 			nativeVocoderOld.next();
 		}
 		duration = SystemClock.elapsedRealtimeNanos() - start;
-		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed natives vocoderOld = %s", duration));
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed   native vocoderOld = %s", duration));
 
 
 		start = SystemClock.elapsedRealtimeNanos();
@@ -81,7 +85,14 @@ public class PhaseVocoderTest {
 			nativeVocoder.next();
 		}
 		duration = SystemClock.elapsedRealtimeNanos() - start;
-		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed natives vocoder = %s", duration));
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed      native vocoder = %s", duration));
+
+		start = SystemClock.elapsedRealtimeNanos();
+		while(!nativeReaderMulti.getSawOutputEOS()){
+			nativeVocoderMulti.next();
+		}
+		duration = SystemClock.elapsedRealtimeNanos() - start;
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed multithread vocoder = %s", duration));
 	}
 
 	private DummyAudioReader makeDummyAudioReader(int frequency, int seconds){
@@ -118,6 +129,15 @@ public class PhaseVocoderTest {
 			IPhaseVocoder vocoder = new NativePhaseVocoder(reader, tscale, N, H);
 			double actual = testVocoderWithFrequency(vocoder, reader);
 			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native expected = %s actual = %.2f", expected, actual));
+			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
+		}
+
+		for(int i=0;i<7;i++) {
+			int expected = 55 << i;
+			IAudioReader reader = makeDummyAudioReader(expected, 2);
+			IPhaseVocoder vocoder = new NativePhaseVocoderMultiThread(reader, tscale, N, H);
+			double actual = testVocoderWithFrequency(vocoder, reader);
+			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() multi thread expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
 		}
 

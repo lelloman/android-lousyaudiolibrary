@@ -9,6 +9,9 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,   "FFT_JNI", __VA_ARGS__)
 #include "fft.h"
 
+#define swap(arr, a, b) holder = arr[a];arr[a] = arr[b];arr[b] = holder;
+
+static jdouble holder = 1;
 
 int checkOk(int* data1, int* data2, int size){
     for(int i=0;i<size;i++){
@@ -70,15 +73,12 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_dummy
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size){
     double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
 
-    reverseBit(data, size);
     fft(data, size,1);
 }
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size, jboolean scale){
     double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
 
-
-    reverseBit(data, size);
     fft(data, size,-1);
 
     if(scale) {
@@ -89,17 +89,18 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse
     }
 }
 
-void reverseBit(double* arr,int size){
+void fft(double*data, jint size, int sinal){
+
     int j=0;
     int n2 = size / 2;
     int n4 = size / 4;
     for (int i=0;i<n2;i+=2) {
         if (j > i) {
-            swap(arr,j,i);
-            swap(arr,j+1,i+1);
+            swap(data, j, i);
+            swap(data, j + 1, i + 1);
             if((j/2)<(n4)){
-                swap(arr,(size-(i+2)),(size-(j+2)));
-                swap(arr,(size-(i+2))+1,(size-(j+2))+1);
+                swap(data, (size - (i + 2)), (size - (j + 2)));
+                swap(data, (size - (i + 2)) + 1, (size - (j + 2)) + 1);
             }
         }
         int m=n2;
@@ -109,15 +110,7 @@ void reverseBit(double* arr,int size){
         }
         j += m;
     }
-}
 
-void swap(double* arr,int a, int b){
-    double holder = arr[a];
-    arr[a] = arr[b];
-    arr[b] = holder;
-}
-
-void fft(double* pcm,jint size, int sinal){
     int mmax=2;
     int n = size;
     double PI2 = 6.283185307179586;
@@ -136,13 +129,13 @@ void fft(double* pcm,jint size, int sinal){
                 int j1 = j-1;
                 int i1 = i-1;
 
-                double tempr=wr*pcm[j1]-wi*pcm[j];
-                double tempi=wr*pcm[j]+wi*pcm[j1];
+                double tempr= wr * data[j1] - wi * data[j];
+                double tempi= wr * data[j] + wi * data[j1];
 
-                pcm[j1]=pcm[i1]-tempr;
-                pcm[j]=pcm[i]-tempi;
-                pcm[i1] += tempr;
-                pcm[i] += tempi;
+                data[j1]= data[i1] - tempr;
+                data[j]= data[i] - tempi;
+                data[i1] += tempr;
+                data[i] += tempi;
             }
             wr=(wtemp=wr)*wpr-wi*wpi+wr;
             wi=wi*wpr+wtemp*wpi+wi;
