@@ -31,7 +31,7 @@ public class PhaseVocoderTest {
 	public void nativeArrayCopyPerformanceTest(){
 		Fft fft = new Fft(8);
 
-		int SIZE = 1 << 24;
+		int SIZE = 1 << 26;
 		int ITERATIONS = 1 << 2;
 
 		long start = SystemClock.elapsedRealtimeNanos();
@@ -48,8 +48,8 @@ public class PhaseVocoderTest {
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test
 	public void phaseVocoderPerformanceTest() {
-		int N = 4096 * 4;
-		int H = N / 8;
+		int N = 4096 * 16;
+		int H = N / 16;
 		double tscale = .5;
 
 		IAudioReader javaReader = makeDummyAudioReader(440, 30);

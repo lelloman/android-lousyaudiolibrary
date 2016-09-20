@@ -35,6 +35,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_testArr
         (JNIEnv *, jobject, jint, jint);
 
 void fft(double*data, int size, int sinal);
+void scale(double* data, int size, double factor);
 
 #ifdef __cplusplus
 }

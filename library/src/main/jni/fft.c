@@ -15,7 +15,7 @@ static jdouble holder = 1;
 
 int checkOk(int* data1, int* data2, int size){
     for(int i=0;i<size;i++){
-        if(data1[i] != data2[i]){
+        if(data1[i] != data2[i]*2){
             return 0;
         }
     }
@@ -76,16 +76,26 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward
     fft(data, size,1);
 }
 
-JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size, jboolean scale){
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size, jboolean scaleOutput){
     double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
 
     fft(data, size,-1);
 
-    if(scale) {
-        double factor = size/4;
-        for (int i = 0; i < size; i++) {
-            data[i] /= factor;
+    if(scaleOutput) {
+        scale(data, size, size/4);
+    }
+}
+
+void scale(double* data, int size, double factor){
+
+    for (int i = 0; i < size; i++) {
+        double v = data[i] / factor;
+        if(v > 1){
+            v = 1;
+        }else if(v < -1){
+            v = -1;
         }
+        data[i] = v;
     }
 }
 

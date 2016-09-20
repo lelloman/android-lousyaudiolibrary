@@ -1,11 +1,11 @@
 
 #include <pthread.h>
 
-static const int N = 2;
+static const int N = 4;
 
 void arrayCopySingleThread(int* data1, int* data2, int size){
     for(int i=0;i<size;i++){
-        data2[i] = data1[i];
+        data2[i] = data1[i] * 2;
     }
 }
 
@@ -38,5 +38,10 @@ void arrayCopyMultiThread(int* data1, int* data2, int size){
         arg->size = size;
         arg->threadId = i;
         int ret = pthread_create(&my_thread[i], NULL, &copy, arg);
+    }
+
+    int res;
+    for(int i=0;i<N;i++){
+        pthread_join(my_thread[i], (void **)&res);
     }
 }
