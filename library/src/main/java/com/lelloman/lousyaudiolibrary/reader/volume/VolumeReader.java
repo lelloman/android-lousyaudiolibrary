@@ -1,54 +1,24 @@
 package com.lelloman.lousyaudiolibrary.reader.volume;
 
-import android.util.Log;
-
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class VolumeReader extends IVolumeReader{
 
 	private int chunkCursor;
 	private byte[] chunk;
-	private byte[] miniByteBuffer;
+	private byte[] miniByteBuffer = new byte[2];;
 	private int cursor;
-	private List<VolumeReader> children = new LinkedList<>();
 
 	private VolumeReader(VolumeReader parent, float start, float end){
-		this.zoomLevels = new int[parent.zoomLevels.length];
-		this.totalFrames = parent.totalFrames;
-		this.miniByteBuffer = new byte[2];
-		data = new Double[zoomLevels.length][];
-		float span = end - start;
-
-		for(int i=0;i<data.length;i++){
-			int subZoomLevel = (int) (parent.zoomLevels[i] * span);
-			this.zoomLevels[i] = subZoomLevel;
-			data[i] = new Double[subZoomLevel];
-			int startJ = (int) (parent.zoomLevels[i] * start);
-
-			for(int j=0;j<subZoomLevel;j++){
-				Double d = parent.data[i][j+startJ];
-				if(d == null){
-					break;
-				}
-				data[i][j] = d;
-			}
-		}
-
-		Log.d(VolumeReader.class.getSimpleName(), String.format("subWindow original levels = %s - sub %s", Arrays.toString(parent.zoomLevels), Arrays.toString(this.zoomLevels)));
+		super(parent, start, end);
 	}
 
 	public VolumeReader(final IAudioReader audioReader, int... zoomLevels) {
+		super(audioReader, zoomLevels);
 
-		this.audioReader = audioReader;
 		this.miniByteBuffer = new byte[2];
-		totalFrames = audioReader.getDurationFrames();
-		data = new Double[zoomLevels.length][];
-		this.zoomLevels = zoomLevels;
 
 		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
 		for(int i = 0; i< zoomLevels.length; i++){
@@ -78,7 +48,7 @@ public class VolumeReader extends IVolumeReader{
 	}
 
 	@Override
-	public VolumeReader subWindow(float start, float end){
+	public IVolumeReader subWindow(float start, float end){
 
 		VolumeReader output = new VolumeReader(this, start, end);
 		if(reading) {
@@ -88,24 +58,6 @@ public class VolumeReader extends IVolumeReader{
 		}
 
 		return output;
-	}
-
-	public int getVolumeLength(int zoomLevel) {
-		return data[zoomLevel].length;
-	}
-
-	@Override
-	public Double getVolume(int zoom, int index){
-		Double[] volume = data[zoom];
-		if(volume == null || index >= volume.length){
-			return null;
-		}
-		return volume[index];
-	}
-
-
-	public void setOnVolumeReadListener(OnVolumeReadListener listener){
-		this.listener = listener;
 	}
 
 	private byte getNextByte() {

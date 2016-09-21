@@ -14,6 +14,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
 import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
 
 
@@ -45,7 +46,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	private float cursor = 0;
 	protected VolumeViewListener listener;
-	private VolumeReader volumeReader;
+	private IVolumeReader volumeReader;
 
 	private int minHeight, maxHeight;
 	private int zoomLevel;
@@ -104,7 +105,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		gestureDetector = new GestureDetector(context, new  GestureDetecotr());
 	}
 
-	public void setVolumeReader(VolumeReader volumeReader){
+	public void setVolumeReader(IVolumeReader volumeReader){
 		this.volumeReader = volumeReader;
 		volumeReader.setOnVolumeReadListener(this);
 		selectZoomLevel(getWidth(), getHeight());
@@ -194,6 +195,11 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 		drawFrame(frameIndex, value);
 
+		postInvalidate();
+	}
+
+	@Override
+	public void onFrameReadingEnd() {
 		postInvalidate();
 	}
 
@@ -313,7 +319,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		return cursor;
 	}
 
-	public VolumeReader getVolumeReader(){
+	public IVolumeReader getVolumeReader(){
 		return volumeReader;
 	}
 
