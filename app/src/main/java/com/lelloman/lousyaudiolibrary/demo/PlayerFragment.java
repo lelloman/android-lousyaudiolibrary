@@ -13,7 +13,7 @@ import android.widget.ToggleButton;
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
 import com.lelloman.lousyaudiolibrary.reader.AudioReader;
-import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
+import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
 import com.lelloman.lousyaudiolibrary.view.CompoundVolumeView;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
 

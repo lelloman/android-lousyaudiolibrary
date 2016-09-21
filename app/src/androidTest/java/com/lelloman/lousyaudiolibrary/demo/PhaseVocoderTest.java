@@ -11,7 +11,7 @@ import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.IPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderMultiThread;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderOld;
-import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.PhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.JavaPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
@@ -53,7 +53,7 @@ public class PhaseVocoderTest {
 		double tscale = .5;
 
 		IAudioReader javaReader = makeDummyAudioReader(440, 30);
-		IPhaseVocoder javaVocoder = new PhaseVocoder(javaReader, tscale,N, H);
+		IPhaseVocoder javaVocoder = new JavaPhaseVocoder(javaReader, tscale,N, H);
 
 		IAudioReader nativeReaderOld = makeDummyAudioReader(440, 30);
 		IPhaseVocoder nativeVocoderOld = new NativePhaseVocoderOld(nativeReaderOld, tscale, N, H);
@@ -108,7 +108,7 @@ public class PhaseVocoderTest {
 		for(int i=0;i<7;i++) {
 			int expected = 55 << i;
 			IAudioReader reader = makeDummyAudioReader(expected, 2);
-			IPhaseVocoder vocoder = new PhaseVocoder(reader, tscale, N, H);
+			IPhaseVocoder vocoder = new JavaPhaseVocoder(reader, tscale, N, H);
 			double actual = testVocoderWithFrequency(vocoder, reader);
 			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() java expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);

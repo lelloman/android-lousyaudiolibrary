@@ -14,7 +14,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
+import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
 
 
 public class VolumeView extends View implements VolumeReader.OnVolumeReadListener {

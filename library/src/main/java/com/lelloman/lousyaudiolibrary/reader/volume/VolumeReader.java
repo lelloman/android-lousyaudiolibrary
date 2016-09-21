@@ -1,29 +1,21 @@
-package com.lelloman.lousyaudiolibrary.reader;
+package com.lelloman.lousyaudiolibrary.reader.volume;
 
 import android.util.Log;
+
+import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public class VolumeReader {
+public class VolumeReader extends IVolumeReader{
 
-	public interface OnVolumeReadListener {
-		void onNewFrame(int zoomLevel, int frameIndex, int totFrames, Double value);
-	}
-
-	private IAudioReader audioReader;
 	private int chunkCursor;
 	private byte[] chunk;
 	private byte[] miniByteBuffer;
-	private Double[][] data;
 	private int cursor;
-	private OnVolumeReadListener listener;
-	private long totalFrames;
-	private int[] zoomLevels;
 	private List<VolumeReader> children = new LinkedList<>();
-	private boolean reading;
 
 	private VolumeReader(VolumeReader parent, float start, float end){
 		this.zoomLevels = new int[parent.zoomLevels.length];
@@ -85,6 +77,7 @@ public class VolumeReader {
 		}).start();
 	}
 
+	@Override
 	public VolumeReader subWindow(float start, float end){
 
 		VolumeReader output = new VolumeReader(this, start, end);
@@ -101,6 +94,7 @@ public class VolumeReader {
 		return data[zoomLevel].length;
 	}
 
+	@Override
 	public Double getVolume(int zoom, int index){
 		Double[] volume = data[zoom];
 		if(volume == null || index >= volume.length){
@@ -109,9 +103,6 @@ public class VolumeReader {
 		return volume[index];
 	}
 
-	public int[] getZoomLevels(){
-		return zoomLevels;
-	}
 
 	public void setOnVolumeReadListener(OnVolumeReadListener listener){
 		this.listener = listener;

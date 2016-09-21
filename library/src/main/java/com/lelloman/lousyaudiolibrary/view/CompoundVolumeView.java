@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-import com.lelloman.lousyaudiolibrary.reader.VolumeReader;
+import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
 
 
 public class CompoundVolumeView extends LinearLayout implements VolumeView.VolumeViewListener {

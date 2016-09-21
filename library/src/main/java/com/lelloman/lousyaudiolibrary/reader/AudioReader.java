@@ -17,7 +17,7 @@ public class AudioReader implements IAudioReader {
 
 	private MediaExtractor extractor;
 	private MediaCodec codec;
-	private MediaCodec.BufferInfo info;
+	protected MediaCodec.BufferInfo info;
 
 	private MediaFormat format;
 	private String mime;
@@ -32,7 +32,7 @@ public class AudioReader implements IAudioReader {
 	private long currentMs = 0;
 	private long currentUs = 0;
 
-	private int noOutputCounter = 0;
+	protected int noOutputCounter = 0;
 
 	private byte[] chunk = null;
 	private double[] chunkDouble = null;
@@ -45,10 +45,10 @@ public class AudioReader implements IAudioReader {
 	ByteBuffer inputBuffer;
 	ByteBuffer outputBuffer;
 
-	private boolean released = false;
+	protected boolean released = false;
 
 	private boolean sawInputEOS = false;
-	private boolean sawOutputEOS = false;
+	protected boolean sawOutputEOS = false;
 
 	public AudioReader(String src) throws Exception {
 		extractor = new MediaExtractor();
@@ -134,7 +134,7 @@ public class AudioReader implements IAudioReader {
 		return chunkDouble;
 	}
 
-	private void processInputBuffer() {
+	protected void processInputBuffer() {
 
 		if (sawInputEOS) return;
 
@@ -161,7 +161,7 @@ public class AudioReader implements IAudioReader {
 		}
 	}
 
-	private void processOutputBuffer() {
+	protected void processOutputBuffer() {
 
 		int res = codec.dequeueOutputBuffer(info, CODEC_TIMEOUT_US);
 
@@ -176,13 +176,8 @@ public class AudioReader implements IAudioReader {
 				outputBuffer = codec.getOutputBuffer(outputBufIndex);
 			}
 
-			if (chunk == null) {
-				chunk = new byte[info.size];
-			} else if (chunk.length != info.size) {
-				chunk = new byte[info.size];
-			}
+			processNativeOutputBuffer();
 
-			outputBuffer.get(chunk);
 			outputBuffer.clear();
 
             /*if(chunk.length == 0)
@@ -200,6 +195,16 @@ public class AudioReader implements IAudioReader {
 		} else {
 
 		}
+	}
+
+	protected void processNativeOutputBuffer(){
+		if (chunk == null) {
+			chunk = new byte[info.size];
+		} else if (chunk.length != info.size) {
+			chunk = new byte[info.size];
+		}
+
+		outputBuffer.get(chunk);
 	}
 
 	@Override

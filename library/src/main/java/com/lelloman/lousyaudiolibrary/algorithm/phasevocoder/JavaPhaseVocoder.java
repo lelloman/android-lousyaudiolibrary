@@ -6,7 +6,7 @@ import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 import org.jtransforms.fft.DoubleFFT_1D;
 
 
-public class PhaseVocoder implements IPhaseVocoder {
+public class JavaPhaseVocoder implements IPhaseVocoder {
 
 	public static final double PI2 = Math.PI * 2;
 
@@ -27,7 +27,7 @@ public class PhaseVocoder implements IPhaseVocoder {
 	private BufferManager manager;
 	private boolean slow;
 
-	public PhaseVocoder(IAudioReader reader, double tscale, int N, int H) {
+	public JavaPhaseVocoder(IAudioReader reader, double tscale, int N, int H) {
 
 		this.audioReader = reader;
 		this.N = N;
