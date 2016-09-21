@@ -8,7 +8,7 @@ public class VolumeReader extends IVolumeReader{
 
 	private int chunkCursor;
 	private byte[] chunk;
-	private byte[] miniByteBuffer = new byte[2];;
+	private byte[] miniByteBuffer = new byte[2];
 	private int cursor;
 
 	private VolumeReader(VolumeReader parent, float start, float end){
@@ -17,8 +17,6 @@ public class VolumeReader extends IVolumeReader{
 
 	public VolumeReader(final IAudioReader audioReader, int... zoomLevels) {
 		super(audioReader, zoomLevels);
-
-		this.miniByteBuffer = new byte[2];
 
 		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
 		for(int i = 0; i< zoomLevels.length; i++){

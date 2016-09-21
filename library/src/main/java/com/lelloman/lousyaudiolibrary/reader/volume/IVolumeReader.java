@@ -19,7 +19,7 @@ public abstract class IVolumeReader {
 	protected OnVolumeReadListener listener;
 	protected boolean reading;
 	protected Double[][] data;
-	protected List<VolumeReader> children = new LinkedList<>();
+	protected List<IVolumeReader> children = new LinkedList<>();
 
 	protected IVolumeReader(IVolumeReader parent, float start, float end){
 		this.zoomLevels = new int[parent.zoomLevels.length];
