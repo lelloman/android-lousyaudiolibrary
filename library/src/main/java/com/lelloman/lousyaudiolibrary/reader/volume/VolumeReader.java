@@ -9,7 +9,6 @@ public class VolumeReader extends IVolumeReader{
 	private int chunkCursor;
 	private byte[] chunk;
 	private byte[] miniByteBuffer = new byte[2];
-	private int cursor;
 
 	private VolumeReader(VolumeReader parent, float start, float end){
 		super(parent, start, end);
@@ -20,7 +19,6 @@ public class VolumeReader extends IVolumeReader{
 
 		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
 		for(int i = 0; i< zoomLevels.length; i++){
-			data[i] = new Double[zoomLevels[i]];
 			int pcmFramesPerVolume = (int) (totalFrames / zoomLevels[i]);
 			makers[i] = new VolumeMaker(i, pcmFramesPerVolume, data[i]);
 		}
@@ -78,14 +76,16 @@ public class VolumeReader extends IVolumeReader{
 
 	private class VolumeMaker{
 
+		public static final double SHORT_MAX = Short.MAX_VALUE;
+
 		final int pcmFramesPerVolumeFrame;
-		final Double[] volume;
+		final double[] volume;
 		final int index;
 		double max;
 		int pcmcursor;
 		int volumeCursor;
 
-		public VolumeMaker(int index, int pcmFramesPerVolumeFrame, Double[] volume){
+		public VolumeMaker(int index, int pcmFramesPerVolumeFrame, double[] volume){
 			this.index = index;
 			this.pcmFramesPerVolumeFrame = pcmFramesPerVolumeFrame;
 			this.volume = volume;
@@ -96,7 +96,7 @@ public class VolumeReader extends IVolumeReader{
 			if(pcmcursor >= pcmFramesPerVolumeFrame){
 				if(volumeCursor >= volume.length) return;
 
-				double output = max / (double) Short.MAX_VALUE;
+				double output = max / SHORT_MAX;
 				pcmcursor = 0;
 				volume[volumeCursor] = output;
 				if(listener != null){

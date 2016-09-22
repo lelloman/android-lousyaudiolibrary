@@ -17,10 +17,16 @@ public class NativeAudioReader extends AudioReader {
 		super(context, resId);
 	}
 
+	@Override
+	protected void readHeader() throws Exception {
+		super.readHeader();
+		nativeOutput = ByteBuffer.allocateDirect(info.size);
+	}
+
 	public ByteBuffer nextNativeChunk() {
 
 		synchronized (this) {
-			if (sawOutputEOS || released) return null;
+			if (sawOutputEOS || released) return nativeOutput;
 
 			processInputBuffer();
 			noOutputCounter++;
@@ -38,7 +44,8 @@ public class NativeAudioReader extends AudioReader {
 
 	@Override
 	protected void processNativeOutputBuffer() {
-		if(nativeOutput == null){
+		nativeOutput.position(0);
+		if(nativeOutput.limit() != info.size){
 			nativeOutput = ByteBuffer.allocateDirect(info.size);
 		}
 		nativeOutput.put(outputBuffer);

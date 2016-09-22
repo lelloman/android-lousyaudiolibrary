@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
-import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
+import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
 
 
 public class CompoundVolumeView extends LinearLayout implements VolumeView.VolumeViewListener {
@@ -47,7 +47,7 @@ public class CompoundVolumeView extends LinearLayout implements VolumeView.Volum
 		volumeViewSub.setCanDrag(false);
 	}
 
-	public void setVolumeReader(VolumeReader volumeReader) {
+	public void setVolumeReader(IVolumeReader volumeReader) {
 		volumeViewFull.setVolumeReader(volumeReader);
 	}
 

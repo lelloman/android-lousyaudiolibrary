@@ -66,7 +66,7 @@ public class AudioReader implements IAudioReader {
 		readHeader();
 	}
 
-	private void readHeader() throws Exception {
+	protected void readHeader() throws Exception {
 
 		format = extractor.getTrackFormat(0);
 		mime = format.getString(MediaFormat.KEY_MIME);

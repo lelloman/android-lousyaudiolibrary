@@ -173,9 +173,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 		synchronized (BITMAP_LOCK){
 			int i = 0;
-			Double value = volumeReader.getVolume(zoomLevel, i);
+			double value = volumeReader.getVolume(zoomLevel, i);
 
-			while(value != null){
+			while(value != Double.POSITIVE_INFINITY){
 				drawFrame(i++, value);
 				value = volumeReader.getVolume(zoomLevel, i);
 
@@ -189,7 +189,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	}
 
 	@Override
-	public void onNewFrame(int zoomLevel, int frameIndex, int totFrames, Double value) {
+	public void onNewFrame(int zoomLevel, int frameIndex, int totFrames, double value) {
 
 		if(canvas == null || zoomLevel != this.zoomLevel) return;
 
@@ -200,13 +200,14 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	@Override
 	public void onFrameReadingEnd() {
+		drawBitmap();
 		postInvalidate();
 	}
 
-	private void drawFrame(int i1, Double value0){
+	private void drawFrame(int i1, double value0){
 		synchronized (BITMAP_LOCK) {
 
-			if (value0 == null) return;
+			if (value0 == Double.POSITIVE_INFINITY) return;
 
 			int height = getHeight();
 

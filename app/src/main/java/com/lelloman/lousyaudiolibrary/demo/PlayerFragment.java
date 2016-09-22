@@ -13,7 +13,9 @@ import android.widget.ToggleButton;
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
 import com.lelloman.lousyaudiolibrary.reader.AudioReader;
-import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
+import com.lelloman.lousyaudiolibrary.reader.NativeAudioReader;
+import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
+import com.lelloman.lousyaudiolibrary.reader.volume.NativeVolumeReader;
 import com.lelloman.lousyaudiolibrary.view.CompoundVolumeView;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
 
@@ -32,7 +34,7 @@ public class PlayerFragment extends Fragment implements
 	private ToggleButton btnSlow;
 	private SeekBar seekBarSpeed;
 	private CompoundVolumeView volumeView;
-	private VolumeReader volumeReader;
+	private IVolumeReader volumeReader;
 
 	private boolean hasSubWindow;
 	private float subWindowStart;
@@ -104,7 +106,7 @@ public class PlayerFragment extends Fragment implements
 						tot*4,
 						tot*6
 				};
-				volumeReader = new VolumeReader(new AudioReader(getActivity(), resId), intervals);
+				volumeReader = new NativeVolumeReader(new NativeAudioReader(getActivity(), resId), intervals);
 				//volumeReader = new VolumeReader(new DummyAudioReader(44100 * 10, 44100, 440,0,4096), intervals);
 			} else {
 				throw new Exception("mboh");
