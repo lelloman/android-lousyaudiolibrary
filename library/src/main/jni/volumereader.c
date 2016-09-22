@@ -24,7 +24,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_reader_volume_NativeV
         unsigned char char2 = samples[i+1];
 
         signed short sample = (char2 << 8) + char1;
-        LOGE("sample = %d", sample);
+        //LOGE("sample = %d", sample);
         if(sample < 0){
             sample *= -1;
         }
@@ -35,11 +35,12 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_reader_volume_NativeV
             double output = max / SHORT_MAX;
             pcmCursor = 0;
             data[volumeCursor++] = output;
-            LOGE("max = %d", max);
+            LOGE("output = %.2f", output);
             max = 0;
         }else{
             if(sample > max){
                 max = sample;
+                //LOGE("sample = %d, max = %f", sample, max);
             }
             pcmCursor++;
         }

@@ -37,6 +37,7 @@ public class NativeVolumeReader extends IVolumeReader{
 				for(int i=0;i<zoomLevels.length;i++){
 					VolumeMaker maker = makers[i];
 					double[] volume = new double[maker.size];
+					maker.nativeData.order(ByteOrder.nativeOrder());
 					maker.nativeData.asDoubleBuffer().get(volume);
 					data[i] = volume;
 
