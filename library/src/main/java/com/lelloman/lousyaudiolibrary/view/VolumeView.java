@@ -219,18 +219,19 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	private void drawFrame(int i1, double value0) {
 		synchronized (BITMAP_LOCK) {
+			if(canvas != null) {
+				if (value0 == Double.POSITIVE_INFINITY) return;
 
-			if (value0 == Double.POSITIVE_INFINITY) return;
+				int height = getHeight();
 
-			int height = getHeight();
+				int barLength0 = minHeight + (int) (value0 * maxHeight);
+				int y0up = (height - barLength0) / 2;
+				int y0down = height - y0up;
 
-			int barLength0 = minHeight + (int) (value0 * maxHeight);
-			int y0up = (height - barLength0) / 2;
-			int y0down = height - y0up;
+				float x0 = i1;
 
-			float x0 = i1;
-
-			canvas.drawLine(x0, y0up, x0, y0down, paint);
+				canvas.drawLine(x0, y0up, x0, y0down, paint);
+			}
 		}
 	}
 
