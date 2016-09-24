@@ -7,6 +7,10 @@ import java.nio.ByteBuffer;
 
 public class NativeAudioReader extends AudioReader {
 
+	static {
+		System.loadLibrary("mylib");
+	}
+
 	ByteBuffer nativeOutput;
 
 	public NativeAudioReader(String src) throws Exception {

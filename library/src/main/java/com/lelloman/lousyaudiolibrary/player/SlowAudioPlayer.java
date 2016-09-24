@@ -8,17 +8,25 @@ import java.nio.ByteBuffer;
 
 public class SlowAudioPlayer extends BufferedAudioPlayer {
 
-	protected static final int FRAME_SIZE = 4096 * 8;
-	protected static final int HOP = FRAME_SIZE / 4;
+	protected static final int DEFAULT_FRAME_SIZE = 4096 * 8;
+	protected static final int DEFAULT_HOP = DEFAULT_FRAME_SIZE / 8;
 	protected static final float SCALE = .5f;
 
 	private boolean slow = false;
+	private int frameSize;
+	private int hop;
 
 	private IPhaseVocoder vocoder = null;
 	private ByteBuffer miniByteBuffer = ByteBuffer.allocate(2);
 
-	public SlowAudioPlayer(EventsListener listener) {
+	public SlowAudioPlayer(EventsListener listener, int frameSize, int hop){
 		super(listener);
+		this.frameSize = frameSize;
+		this.hop = hop;
+	}
+
+	public SlowAudioPlayer(EventsListener listener) {
+		this(listener, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
 	}
 
 	@Override
@@ -30,8 +38,8 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	private void initVocoder() {
 		if (reader == null) return;
-		vocoder = new NativePhaseVocoder(reader, SCALE, FRAME_SIZE, HOP);
-		//vocoder = new JavaPhaseVocoder(reader, SCALE, FRAME_SIZE, HOP);
+		vocoder = new NativePhaseVocoder(reader, SCALE, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
+		//vocoder = new JavaPhaseVocoder(reader, SCALE, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
 	}
 
 	@Override
