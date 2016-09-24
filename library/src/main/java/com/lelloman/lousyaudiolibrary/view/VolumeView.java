@@ -4,10 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorMatrix;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -22,7 +19,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public interface VolumeViewListener {
 		void onSingleTap(VolumeView volumeView, float percentX);
+
 		void onDoubleTap(VolumeView volumeView, float percentX);
+
 		void onWindowSelected(VolumeView volumeView, float start, float end);
 	}
 
@@ -32,10 +31,10 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	private Paint paint = new Paint();
 	private Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private Paint hightLightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint windowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-	private Bitmap bitmap;
-	private Canvas canvas;
+	private Bitmap bitmap, windowBitmap;
+	private Canvas canvas, windowCanvas;
 	private Rect srcRect, dstRect;
 	private Rect subWindowSrcRect, subWindowDstRect;
 
@@ -64,35 +63,13 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
 
+		windowPaint.setColor(Color.WHITE);
+		windowPaint.setStyle(Paint.Style.STROKE);
+
 		cursorPaint.setColor(Color.YELLOW);
 		cursorPaint.setStyle(Paint.Style.STROKE);
-		cursorPaint.setStrokeWidth(2*getResources().getDisplayMetrics().density);
+		cursorPaint.setStrokeWidth(2 * getResources().getDisplayMetrics().density);
 
-		hightLightPaint.setStyle(Paint.Style.FILL);
-		hightLightPaint.setColor(Color.WHITE);
-
-		PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(0xffffff, PorterDuff.Mode.ADD);
-		float[] colorTransform = {
-				0, 1f, 0, 0, 0,
-				0, 0, 0f, 0, 0,
-				0, 0, 0, 0f, 0,
-				0, 0, 0, 1f, 0};
-
-		ColorMatrix colorMatrix = new ColorMatrix();
-		colorMatrix.setSaturation(0f); //Remove Colour
-		colorMatrix.set(colorTransform); //Apply the Red
-
-		float[] NEGATIVE = {
-				-1.0f,     0,     0,    0, 255, // red
-				0, -1.0f,     0,    0, 255, // green
-				0,     0, -1.0f,    0, 255, // blue
-				0,     0,     0, 1.0f,   0  // alpha
-		};
-
-//		ColorMatrixColorFilter colorFilter = new ColorMatrixColorFilter(NEGATIVE);
-
-		//ColorFilter colorFilter = new LightingColorFilter(3, 0x111111);
-		hightLightPaint.setColorFilter(colorFilter);
 
 		dstRect = new Rect(0, 0, 1, 1);
 		subWindowSrcRect = new Rect(0, 0, 1, 1);
@@ -102,24 +79,37 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		draggingPaint.setColor(Color.YELLOW);
 		draggingPaint.setAlpha(155);
 
-		gestureDetector = new GestureDetector(context, new  GestureDetecotr());
+		gestureDetector = new GestureDetector(context, new GestureDetecotr());
 	}
 
-	public void setVolumeReader(IVolumeReader volumeReader){
+	public void setVolumeReader(IVolumeReader volumeReader) {
 		this.volumeReader = volumeReader;
 		volumeReader.setOnVolumeReadListener(this);
 		selectZoomLevel(getWidth(), getHeight());
-		if(bitmap != null){
+		if (bitmap != null) {
 			drawBitmap();
 		}
 	}
 
-	public void setSubWindow(float start, float end){
+	public void setSubWindow(float start, float end) {
 		hasSubWindow = true;
 		subWindowStart = start;
 		subWindowEnd = end;
+
+		if (bitmap != null) {
+			int subWidth = (int) (bitmap.getWidth() * (end - start));
+			windowBitmap = Bitmap.createBitmap(subWidth, bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+			windowCanvas = new Canvas(windowBitmap);
+
+			for(int i=0;i<windowBitmap.getWidth();i++){
+				int index = (int) (bitmap.getWidth() * subWindowStart + i);
+				drawSubWindowFrame(i, volumeReader.getVolume(zoomLevel, index));
+			}
+		}
 	}
-	public void unSetSubWindow(){
+
+
+	public void unSetSubWindow() {
 		hasSubWindow = false;
 	}
 
@@ -142,15 +132,15 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		drawBitmap();
 	}
 
-	private void selectZoomLevel(int width, int height){
-		if(volumeReader == null || width < 1 || height < 1) return;
+	private void selectZoomLevel(int width, int height) {
+		if (volumeReader == null || width < 1 || height < 1) return;
 		width /= K;
 
 		int[] levels = volumeReader.getZoomLevels();
-		zoomLevel = levels.length-1;
+		zoomLevel = levels.length - 1;
 
-		for(int i = 0; i< levels.length; i++){
-			if(levels[i] >= width){
+		for (int i = 0; i < levels.length; i++) {
+			if (levels[i] >= width) {
 				this.zoomLevel = i;
 				break;
 			}
@@ -165,17 +155,28 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 			canvas = new Canvas(bitmap);
 			canvas.drawColor(DEFAULT_BG_COLOR);
 			srcRect = new Rect(0, 0, levels[zoomLevel], height);
+
+			if(hasSubWindow){
+				int subWidth = (int) (bitmap.getWidth() * (subWindowEnd - subWindowStart));
+				windowBitmap = Bitmap.createBitmap(subWidth, bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+				windowCanvas = new Canvas(windowBitmap);
+
+				for(int i=0;i<windowBitmap.getWidth();i++){
+					int index = (int) (bitmap.getWidth() * subWindowStart + i);
+					drawSubWindowFrame(i, volumeReader.getVolume(zoomLevel, index));
+				}
+			}
 		}
 	}
 
 	private void drawBitmap() {
-		if(volumeReader == null) return;
+		if (volumeReader == null) return;
 
-		synchronized (BITMAP_LOCK){
+		synchronized (BITMAP_LOCK) {
 			int i = 0;
 			double value = volumeReader.getVolume(zoomLevel, i);
 
-			while(value != Double.POSITIVE_INFINITY){
+			while (value != Double.POSITIVE_INFINITY) {
 				drawFrame(i++, value);
 				value = volumeReader.getVolume(zoomLevel, i);
 
@@ -183,7 +184,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 	}
 
-	public void resetDrag(){
+	public void resetDrag() {
 		dragging = false;
 		postInvalidate();
 	}
@@ -191,7 +192,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	@Override
 	public void onNewFrame(int zoomLevel, int frameIndex, int totFrames, double value) {
 
-		if(canvas == null || zoomLevel != this.zoomLevel) return;
+		if (canvas == null || zoomLevel != this.zoomLevel) return;
 
 		drawFrame(frameIndex, value);
 
@@ -204,7 +205,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		postInvalidate();
 	}
 
-	private void drawFrame(int i1, double value0){
+	private void drawFrame(int i1, double value0) {
 		synchronized (BITMAP_LOCK) {
 
 			if (value0 == Double.POSITIVE_INFINITY) return;
@@ -221,7 +222,17 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 	}
 
-	public void setCursor(float d){
+	private void drawSubWindowFrame(int index, double value){
+		int height = getHeight();
+
+		int barLength = minHeight + (int) (value * maxHeight);
+		int yUp = (height - barLength) / 2;
+		int yDown = height - yUp;
+
+		windowCanvas.drawLine(index,yUp,index,yDown, windowPaint);
+	}
+
+	public void setCursor(float d) {
 		this.cursor = d;
 		postInvalidate();
 	}
@@ -241,22 +252,22 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 			}
 		}
 
-		if(hasSubWindow){
+		if (hasSubWindow) {
 			int left = (int) (width * subWindowStart);
 			int right = (int) (width * subWindowEnd);
-			subWindowDstRect.set(left,0,right, height);
+			subWindowDstRect.set(left, 0, right, height);
 
 			left = (int) (bitmap.getWidth() * subWindowStart);
 			right = (int) (bitmap.getWidth() * subWindowEnd);
 
 			subWindowSrcRect.set(left, 0, right, bitmap.getHeight());
 
-			canvas.drawBitmap(bitmap, subWindowSrcRect, subWindowDstRect, hightLightPaint);
+			canvas.drawBitmap(windowBitmap, subWindowSrcRect, subWindowDstRect, null);
 			//canvas.drawBitmap(bitmap, srcRect, dstRect, hightLightPaint);
 		}
 
 		int x = (int) (width * cursor);
-		canvas.drawLine(x,height,x,0,cursorPaint);
+		canvas.drawLine(x, height, x, 0, cursorPaint);
 
 		if (dragging || hasSecondCursor) {
 			canvas.drawLine(draggingX, 0, draggingX, canvas.getHeight(), draggingPaint);
@@ -264,24 +275,24 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	}
 
-	protected void onSingleTup(MotionEvent event){
+	protected void onSingleTup(MotionEvent event) {
 		dragging = false;
-		if(listener != null){
+		if (listener != null) {
 			float x = event.getX() / getWidth();
 			listener.onSingleTap(this, x);
 		}
 	}
 
-	protected void onDoubleTap(MotionEvent event){
+	protected void onDoubleTap(MotionEvent event) {
 		dragging = false;
-		if(listener != null){
+		if (listener != null) {
 			float x = event.getX() / getWidth();
 			listener.onDoubleTap(this, x);
 		}
 	}
 
-	protected void onLongPress(MotionEvent event){
-		if(canDrag) {
+	protected void onLongPress(MotionEvent event) {
+		if (canDrag) {
 			dragging = true;
 			draggingX = event.getX();
 			postInvalidate();
@@ -292,7 +303,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	public boolean onTouchEvent(MotionEvent motionEvent) {
 
 		gestureDetector.onTouchEvent(motionEvent);
-		
+
 		int action = motionEvent.getAction();
 
 		if (dragging && action == motionEvent.ACTION_MOVE) {
@@ -301,7 +312,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 			draggingX = motionEvent.getX();
 			dragging = false;
 			hasSecondCursor = true;
-			if(listener != null){
+			if (listener != null) {
 				float secondCursor = draggingX / getWidth();
 				listener.onWindowSelected(this, Math.min(getCursor(), secondCursor), Math.max(getCursor(), secondCursor));
 			}
@@ -312,21 +323,21 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		return true;
 	}
 
-	protected Rect getDstRect(){
+	protected Rect getDstRect() {
 		return dstRect;
 	}
 
-	public float getCursor(){
+	public float getCursor() {
 		return cursor;
 	}
 
-	public IVolumeReader getVolumeReader(){
+	public IVolumeReader getVolumeReader() {
 		return volumeReader;
 	}
 
-	public void setCanDrag(boolean b){
+	public void setCanDrag(boolean b) {
 		canDrag = b;
-		if(!canDrag){
+		if (!canDrag) {
 			hasSecondCursor = false;
 			dragging = false;
 		}

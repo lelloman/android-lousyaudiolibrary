@@ -45,8 +45,8 @@ public class NativeAudioReader extends AudioReader {
 	@Override
 	protected void processNativeOutputBuffer() {
 		nativeOutput.position(0);
-		if(nativeOutput.limit() != info.size){
-			nativeOutput = ByteBuffer.allocateDirect(info.size);
+		if(nativeOutput.limit() != outputBuffer.limit()){
+			nativeOutput = ByteBuffer.allocateDirect(outputBuffer.limit());
 		}
 		nativeOutput.put(outputBuffer);
 	}
