@@ -1,16 +1,20 @@
 package com.lelloman.lousyaudiolibrary.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.lelloman.lousyaudiolibrary.R;
 import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
 import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
 
@@ -28,19 +32,28 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	public static final int K = 4;
 	private static final Object BITMAP_LOCK = 0xb00b5;
 	private static final int DEFAULT_BG_COLOR = 0xffbbbbbb;
+	private static final int DEFAULT_PAINT_COLOR = 0xff000000;
+	private static final int DEFAULT_CURSOR_COLOR = 0xffffff00;
+	private static final ColorMatrix INVERT_COLOR_MATRIX = new ColorMatrix(new float[]{
+			-1, 0, 0, 0, 255,
+			0, -1, 0, 0, 255,
+			0, 0, -1, 0, 255,
+			0, 0, 0, 1, 0
+	});
 
 	private Paint paint = new Paint();
 	private Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private Paint windowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint invertedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint draggingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private int bgColor = DEFAULT_BG_COLOR;
 
-	private Bitmap bitmap, windowBitmap;
-	private Canvas canvas, windowCanvas;
+	private Bitmap bitmap;
+	private Canvas canvas;
 	private Rect srcRect, dstRect;
 	private Rect subWindowSrcRect, subWindowDstRect;
 
 	private boolean dragging;
 	private float draggingX;
-	private Paint draggingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private boolean hasSecondCursor;
 
 	private float cursor = 0;
@@ -60,26 +73,46 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public VolumeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		paint.setColor(Color.BLACK);
+
 		paint.setStyle(Paint.Style.STROKE);
 
-		windowPaint.setColor(Color.WHITE);
-		windowPaint.setStyle(Paint.Style.STROKE);
+		invertedPaint.setStyle(Paint.Style.FILL);
+		invertedPaint.setColorFilter(new ColorMatrixColorFilter(INVERT_COLOR_MATRIX));
 
-		cursorPaint.setColor(Color.YELLOW);
 		cursorPaint.setStyle(Paint.Style.STROKE);
 		cursorPaint.setStrokeWidth(2 * getResources().getDisplayMetrics().density);
-
 
 		dstRect = new Rect(0, 0, 1, 1);
 		subWindowSrcRect = new Rect(0, 0, 1, 1);
 		subWindowDstRect = new Rect(0, 0, 1, 1);
 
 		draggingPaint.setStyle(Paint.Style.STROKE);
-		draggingPaint.setColor(Color.YELLOW);
 		draggingPaint.setAlpha(155);
 
+		setupColors();
+
 		gestureDetector = new GestureDetector(context, new GestureDetecotr());
+	}
+
+	private void setupColors(){
+		TypedValue typedValue = new TypedValue();
+
+		TypedArray a = getContext().obtainStyledAttributes(typedValue.data, new int[] {
+				R.attr.colorPrimary,
+				R.attr.colorPrimaryDark,
+				R.attr.colorAccent,
+				android.R.attr.windowBackground
+		});
+
+		int paintColor = a.getColor(1, DEFAULT_PAINT_COLOR);
+		int cursorColor = a.getColor(2, DEFAULT_CURSOR_COLOR);
+		bgColor = a.getColor(3, DEFAULT_BG_COLOR);
+
+		a.recycle();
+
+		paint.setColor(paintColor);
+		cursorPaint.setColor(cursorColor);
+		draggingPaint.setColor(cursorColor);
 	}
 
 	public void setVolumeReader(IVolumeReader volumeReader) {
@@ -95,17 +128,6 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		hasSubWindow = true;
 		subWindowStart = start;
 		subWindowEnd = end;
-
-		if (bitmap != null) {
-			int subWidth = (int) (bitmap.getWidth() * (end - start));
-			windowBitmap = Bitmap.createBitmap(subWidth, bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-			windowCanvas = new Canvas(windowBitmap);
-
-			for(int i=0;i<windowBitmap.getWidth();i++){
-				int index = (int) (bitmap.getWidth() * subWindowStart + i);
-				drawSubWindowFrame(i, volumeReader.getVolume(zoomLevel, index));
-			}
-		}
 	}
 
 
@@ -153,19 +175,9 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 			bitmap = Bitmap.createBitmap(levels[zoomLevel], height, Bitmap.Config.ARGB_8888);
 			canvas = new Canvas(bitmap);
-			canvas.drawColor(DEFAULT_BG_COLOR);
+			canvas.drawColor(bgColor);
 			srcRect = new Rect(0, 0, levels[zoomLevel], height);
 
-			if(hasSubWindow){
-				int subWidth = (int) (bitmap.getWidth() * (subWindowEnd - subWindowStart));
-				windowBitmap = Bitmap.createBitmap(subWidth, bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-				windowCanvas = new Canvas(windowBitmap);
-
-				for(int i=0;i<windowBitmap.getWidth();i++){
-					int index = (int) (bitmap.getWidth() * subWindowStart + i);
-					drawSubWindowFrame(i, volumeReader.getVolume(zoomLevel, index));
-				}
-			}
 		}
 	}
 
@@ -222,16 +234,6 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		}
 	}
 
-	private void drawSubWindowFrame(int index, double value){
-		int height = getHeight();
-
-		int barLength = minHeight + (int) (value * maxHeight);
-		int yUp = (height - barLength) / 2;
-		int yDown = height - yUp;
-
-		windowCanvas.drawLine(index,yUp,index,yDown, windowPaint);
-	}
-
 	public void setCursor(float d) {
 		this.cursor = d;
 		postInvalidate();
@@ -240,7 +242,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		canvas.drawColor(0xffaaaaaa);
+		canvas.drawColor(bgColor);
 
 		int width = canvas.getWidth();
 		int height = canvas.getHeight();
@@ -248,7 +250,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		synchronized (BITMAP_LOCK) {
 			if (bitmap != null) {
 				dstRect.set(0, 0, width, height);
-				canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+				canvas.drawBitmap(bitmap, srcRect, dstRect, null);// hasSubWindow ? invertedPaint : null);
 			}
 		}
 
@@ -262,8 +264,8 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 			subWindowSrcRect.set(left, 0, right, bitmap.getHeight());
 
-			canvas.drawBitmap(windowBitmap, subWindowSrcRect, subWindowDstRect, null);
-			//canvas.drawBitmap(bitmap, srcRect, dstRect, hightLightPaint);
+			//canvas.drawBitmap(bitmap, subWindowSrcRect, subWindowDstRect, null);
+			canvas.drawRect(subWindowDstRect, cursorPaint);
 		}
 
 		int x = (int) (width * cursor);
