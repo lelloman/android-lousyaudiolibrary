@@ -19,12 +19,12 @@ public class AudioPlayer implements Runnable {
 		void onRelease(AudioPlayer player);
 	}
 
-	public static final int CREATED = 0;
-	public static final int READY_TO_PLAY = 1;
-	public static final int PLAYING = 2;
-	public static final int PAUSED = 3;
-	public static final int RELEASED = 4;
-	public static final int ABORTED = 5;
+	public static final int STATE_CREATED = 0;
+	public static final int STATE_READY_TO_PLAY = 1;
+	public static final int STATE_PLAYING = 2;
+	public static final int STATE_PAUSED = 3;
+	public static final int STATE_RELEASED = 4;
+	public static final int STATE_ABORTED = 5;
 
 	protected IAudioReader reader;
 	private AudioTrack audioTrack;
@@ -34,7 +34,7 @@ public class AudioPlayer implements Runnable {
 
 	private EventsListener listener;
 
-	private int state = CREATED;
+	private int state = STATE_CREATED;
 
 	private long currentMs = 0;
 	private double percent = 0;
@@ -47,11 +47,11 @@ public class AudioPlayer implements Runnable {
 		try {
 			this.reader = reader;
 			initAudioTrack();
-			state = READY_TO_PLAY;
+			state = STATE_READY_TO_PLAY;
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
-			state = ABORTED;
+			state = STATE_ABORTED;
 			return false;
 		}
 	}
@@ -71,7 +71,7 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public boolean start() {
-		if (state == READY_TO_PLAY) {
+		if (state == STATE_READY_TO_PLAY) {
 			running = true;
 			new Thread(this).start();
 			return true;
@@ -80,11 +80,15 @@ public class AudioPlayer implements Runnable {
 		}
 	}
 
+	public int getState(){
+		return state;
+	}
+
 	@Override
 	public void run() {
 
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
-		state = PAUSED;
+		state = STATE_PAUSED;
 
 		listener.onStart(this);
 
@@ -92,7 +96,7 @@ public class AudioPlayer implements Runnable {
 
 			byte[] chunk = emptyChunk;
 
-			if (state != PAUSED) {
+			if (state != STATE_PAUSED) {
 				chunk = getNextChunk();
 				updateCurrentPosition();
 				this.listener.onPlaybackUpdate(this, percent, currentMs);
@@ -110,7 +114,7 @@ public class AudioPlayer implements Runnable {
 		}
 
 		listener.onRelease(this);
-		state = RELEASED;
+		state = STATE_RELEASED;
 		reader.release();
 
 		audioTrack.flush();
@@ -131,17 +135,17 @@ public class AudioPlayer implements Runnable {
 	}
 
 	public void pause() {
-		if (state == PLAYING)
-			state = PAUSED;
+		if (state == STATE_PLAYING)
+			state = STATE_PAUSED;
 		else
-			Log.w(AudioPlayer.class.getSimpleName(), String.format("pause() called on player not in state PLAYING (current state is %s", state));
+			Log.w(AudioPlayer.class.getSimpleName(), String.format("pause() called on player not in state STATE_PLAYING (current state is %s", state));
 	}
 
 	public void play() {
-		if (state == PAUSED)
-			state = PLAYING;
+		if (state == STATE_PAUSED)
+			state = STATE_PLAYING;
 		else
-			Log.w(AudioPlayer.class.getSimpleName(), String.format("play() called on player not in state PAUSED (current state is %s)", state));
+			Log.w(AudioPlayer.class.getSimpleName(), String.format("play() called on player not in state STATE_PAUSED (current state is %s)", state));
 	}
 
 	private void updateCurrentPosition() {
