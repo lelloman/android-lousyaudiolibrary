@@ -82,13 +82,13 @@ public class PhaseVocoderTester {
 		for(VocoderType type : VocoderType.ALL){
 			boolean functional = true;
 			try {
-				for (int i = 0; i < 7; i++) {
+				for (int i = 0; i < iterations; i++) {
 					int expected = 55 << i;
 					double actual = testVocoderFunctionality(type.vocoderClass, tscale, N, H, expected);
 					if (log) {
 						Log.d(tag, String.format("functionTest %s expected %s actual %.2f", String.valueOf(type), expected, actual));
 					}
-					if (actual > expected + 2 || actual < expected - 2) {
+					if (actual > expected + 5 || actual < expected - 5) {
 						functional = false;
 						break;
 					}
