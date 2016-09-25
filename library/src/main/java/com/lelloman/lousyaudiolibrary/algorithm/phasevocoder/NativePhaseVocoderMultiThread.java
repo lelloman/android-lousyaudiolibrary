@@ -8,6 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class NativePhaseVocoderMultiThread implements IPhaseVocoder {
+	static {
+		System.loadLibrary("mylib");
+	}
 
 	private double tscale;
 	private int N, H, N2, halfN, NmH;

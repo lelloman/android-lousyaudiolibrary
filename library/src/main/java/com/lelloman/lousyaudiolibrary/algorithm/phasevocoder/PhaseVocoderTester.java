@@ -73,25 +73,31 @@ public class PhaseVocoderTester {
 
 	public static VocoderType[] getFunctionalVocoderTypes(int baseFreq, int iterations, boolean log){
 
-		int N = 4096 * 8;
-		int H = N / 4;
+		int N = 4096 * 16;
+		int H = N / 8;
 		double tscale = .5;
 
 		List<VocoderType> list = new LinkedList<>();
 		String tag = PhaseVocoderTester.class.getSimpleName();
 		for(VocoderType type : VocoderType.ALL){
 			boolean functional = true;
-			for(int i=0;i<7;i++){
-				int expected = 55 << i;
-				double actual = testVocoderFunctionality(type.vocoderClass, tscale, N, H, expected);
-				if(log){
-					Log.d(tag, String.format("functionTest %s expected %s actual %.2f", String.valueOf(type), expected, actual));
+			try {
+				for (int i = 0; i < 7; i++) {
+					int expected = 55 << i;
+					double actual = testVocoderFunctionality(type.vocoderClass, tscale, N, H, expected);
+					if (log) {
+						Log.d(tag, String.format("functionTest %s expected %s actual %.2f", String.valueOf(type), expected, actual));
+					}
+					if (actual > expected + 2 || actual < expected - 2) {
+						functional = false;
+						break;
+					}
 				}
-				if(actual > expected + 2 || actual < expected - 2){
-					functional = false;
-					break;
-				}
+			}catch (Exception e){
+				e.printStackTrace();
+				functional = false;
 			}
+
 			if(functional){
 				list.add(type);
 			}

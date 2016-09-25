@@ -8,6 +8,9 @@ import java.nio.ByteOrder;
 
 
 public class NativePhaseVocoder implements IPhaseVocoder {
+	static {
+		System.loadLibrary("mylib");
+	}
 
 	public static final double PI2 = Math.PI * 2;
 

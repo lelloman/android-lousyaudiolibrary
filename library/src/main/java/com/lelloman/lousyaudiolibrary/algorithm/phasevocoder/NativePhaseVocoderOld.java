@@ -6,6 +6,9 @@ import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 
 public class NativePhaseVocoderOld implements IPhaseVocoder {
+	static {
+		System.loadLibrary("mylib");
+	}
 
 	public static final double PI2 = Math.PI * 2;
 
