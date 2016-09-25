@@ -2,12 +2,15 @@ package com.lelloman.lousyaudiolibrary.algorithm.phasevocoder;
 
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.lang.reflect.Constructor;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PhaseVocoderTester {
 
@@ -66,6 +69,36 @@ public class PhaseVocoderTester {
 		}
 
 		return sum / count;
+	}
+
+	public static VocoderType[] getFunctionalVocoderTypes(int baseFreq, int iterations, boolean log){
+
+		int N = 4096 * 8;
+		int H = N / 4;
+		double tscale = .5;
+
+		List<VocoderType> list = new LinkedList<>();
+		String tag = PhaseVocoderTester.class.getSimpleName();
+		for(VocoderType type : VocoderType.ALL){
+			boolean functional = true;
+			for(int i=0;i<7;i++){
+				int expected = 55 << i;
+				double actual = testVocoderFunctionality(type.vocoderClass, tscale, N, H, expected);
+				if(log){
+					Log.d(tag, String.format("functionTest %s expected %s actual %.2f", String.valueOf(type), expected, actual));
+				}
+				if(actual > expected + 2 || actual < expected - 2){
+					functional = false;
+					break;
+				}
+			}
+			if(functional){
+				list.add(type);
+			}
+		}
+
+		VocoderType[] output = new VocoderType[list.size()];
+		return list.toArray(output);
 	}
 
 	private PhaseVocoderTester(){

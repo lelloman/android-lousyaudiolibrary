@@ -13,6 +13,7 @@ import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderMultiThread;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderOld;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.PhaseVocoderTester;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.VocoderType;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import junit.framework.Assert;
@@ -69,7 +70,7 @@ public class PhaseVocoderTest {
 
 	@Test
 	public void phaseVocoderFunctionalTest(){
-		int N = 4096 * 8;
+		/*int N = 4096 * 8;
 		int H = N / 4;
 		double tscale = .5;
 
@@ -99,7 +100,10 @@ public class PhaseVocoderTest {
 			double actual = PhaseVocoderTester.testVocoderFunctionality(NativePhaseVocoderMultiThread.class, tscale,N, H, expected);
 			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() multi thread expected = %s actual = %.2f", expected, actual));
 			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
-		}
+		}*/
+
+		VocoderType[] types = PhaseVocoderTester.getFunctionalVocoderTypes(55, 7, true);
+		Assert.assertEquals(VocoderType.ALL.length, types.length);
 
 	}
 
