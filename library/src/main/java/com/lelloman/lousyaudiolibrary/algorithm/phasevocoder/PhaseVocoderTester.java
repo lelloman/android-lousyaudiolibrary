@@ -14,7 +14,7 @@ import java.util.List;
 
 public class PhaseVocoderTester {
 
-	public static long testVocoderPerformanceUs(Class vocoderClass, double scale, int N, int H, int durationSeconds){
+	public static long testVocoderPerformanceMs(Class vocoderClass, double scale, int N, int H, int durationSeconds){
 		DummyAudioReader reader = new DummyAudioReader(44100 * durationSeconds, 44100, 440, 0, 4096);
 
 		IPhaseVocoder vocoder;
@@ -26,11 +26,11 @@ public class PhaseVocoderTester {
 			return -1;
 		}
 
-		long start = SystemClock.elapsedRealtimeNanos();
+		long start = SystemClock.elapsedRealtime();
 		while(!reader.getSawOutputEOS()){
 			vocoder.next();
 		}
-		return SystemClock.elapsedRealtimeNanos() - start;
+		return SystemClock.elapsedRealtime() - start;
 	}
 
 	public static double testVocoderFunctionality(Class vocoderClass, double scale, int N, int H, int frequency){

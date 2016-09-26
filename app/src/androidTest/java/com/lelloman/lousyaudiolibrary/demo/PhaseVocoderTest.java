@@ -49,58 +49,27 @@ public class PhaseVocoderTest {
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test
 	public void phaseVocoderPerformanceTest() {
-		int N = 4096 * 16;
+		int N = 4096 * 8;
 		int H = N / 16;
 		double tscale = .5;
 		int seconds = 5;
 
-		long duration = PhaseVocoderTester.testVocoderPerformanceUs(JavaPhaseVocoder.class, tscale, N, H, seconds);
+		long duration = PhaseVocoderTester.testVocoderPerformanceMs(JavaPhaseVocoder.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed       java  vocoder = %s", duration));
 
-		duration = PhaseVocoderTester.testVocoderPerformanceUs(NativePhaseVocoderOld.class, tscale, N, H, seconds);
+		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoderOld.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed   native vocoderOld = %s", duration));
 
 
-		duration = PhaseVocoderTester.testVocoderPerformanceUs(NativePhaseVocoder.class, tscale, N, H, seconds);
+		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoder.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed      native vocoder = %s", duration));
 
-		duration = PhaseVocoderTester.testVocoderPerformanceUs(NativePhaseVocoderMultiThread.class, tscale, N, H, seconds);
+		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoderMultiThread.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed multithread vocoder = %s", duration));
 	}
 
 	@Test
 	public void phaseVocoderFunctionalTest(){
-		/*int N = 4096 * 8;
-		int H = N / 4;
-		double tscale = .5;
-
-		for(int i=0;i<7;i++) {
-			int expected = 55 << i;
-			double actual = PhaseVocoderTester.testVocoderFunctionality(JavaPhaseVocoder.class, tscale, N, H, expected);
-			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() java expected = %s actual = %.2f", expected, actual));
-			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
-		}
-
-		for(int i=0;i<7;i++) {
-			int expected = 55 << i;
-			double actual = PhaseVocoderTester.testVocoderFunctionality(NativePhaseVocoderOld.class, tscale, N, H, expected);
-			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native old expected = %s actual = %.2f", expected, actual));
-			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
-		}
-
-		for(int i=0;i<7;i++) {
-			int expected = 55 << i;
-			double actual = PhaseVocoderTester.testVocoderFunctionality(NativePhaseVocoder.class, tscale, N, H, expected);
-			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() native expected = %s actual = %.2f", expected, actual));
-			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
-		}
-
-		for(int i=0;i<7;i++) {
-			int expected = 55 << i;
-			double actual = PhaseVocoderTester.testVocoderFunctionality(NativePhaseVocoderMultiThread.class, tscale,N, H, expected);
-			Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("phaseVocoderFunctionalTest() multi thread expected = %s actual = %.2f", expected, actual));
-			Assert.assertTrue(actual < expected + 5 && actual > expected - 5);
-		}*/
 
 		VocoderType[] types = PhaseVocoderTester.getFunctionalVocoderTypes(55, 7, true);
 		Assert.assertEquals(VocoderType.ALL.length, types.length);
