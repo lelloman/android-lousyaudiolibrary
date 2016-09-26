@@ -83,7 +83,7 @@ public class PhaseVocoderTester {
 			boolean functional = true;
 			try {
 				for (int i = 0; i < iterations; i++) {
-					int expected = 55 << i;
+					int expected = baseFreq << i;
 					double actual = testVocoderFunctionality(type.vocoderClass, tscale, N, H, expected);
 					if (log) {
 						Log.d(tag, String.format("functionTest %s expected %s actual %.2f", String.valueOf(type), expected, actual));
