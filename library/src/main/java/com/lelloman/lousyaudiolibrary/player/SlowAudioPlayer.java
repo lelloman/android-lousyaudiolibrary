@@ -10,19 +10,24 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	protected static final int DEFAULT_FRAME_SIZE = 4096 * 8;
 	protected static final int DEFAULT_HOP = DEFAULT_FRAME_SIZE / 8;
-	protected static final float SCALE = .5f;
+	protected static final float DEFAULT_SCALE = .5f;
 
 	private boolean slow = false;
 	private int frameSize;
 	private int hop;
+	private float scale;
 
 	private IPhaseVocoder vocoder = null;
 	private ByteBuffer miniByteBuffer = ByteBuffer.allocate(2);
 
-	public SlowAudioPlayer(EventsListener listener, int frameSize, int hop){
+	public SlowAudioPlayer(EventsListener listener, int frameSize, int hop, float scale){
 		super(listener);
 		this.frameSize = frameSize;
 		this.hop = hop;
+		this.scale = scale;
+	}
+	public SlowAudioPlayer(EventsListener listener, int frameSize, int hop){
+		this(listener, frameSize, hop, DEFAULT_SCALE);
 	}
 
 	public SlowAudioPlayer(EventsListener listener) {
@@ -38,8 +43,8 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	private void initVocoder() {
 		if (reader == null) return;
-		vocoder = new NativePhaseVocoder(reader, SCALE, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
-		//vocoder = new JavaPhaseVocoder(reader, SCALE, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
+		vocoder = new NativePhaseVocoder(reader, scale, frameSize, hop);
+		//vocoder = new JavaPhaseVocoder(reader, DEFAULT_SCALE, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
 	}
 
 	@Override
