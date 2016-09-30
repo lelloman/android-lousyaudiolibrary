@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">LousyAudioLibrary</string>
+    <string name="equilizer_dialog_ok">ok</string>
+    <string name="equilizer_dialog_reset">reset</string>
+    <string name="equilizer_dialog_title">Equilizer</string>
 </resources>

@@ -1,11 +1,8 @@
 package com.lelloman.lousyaudiolibrary.demo;
 
 import android.app.Activity;
-import android.media.audiofx.Equalizer;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +11,7 @@ import android.widget.SeekBar;
 import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
+import com.lelloman.lousyaudiolibrary.player.LousyAudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.SlowAudioPlayer;
 import com.lelloman.lousyaudiolibrary.reader.AudioReader;
 import com.lelloman.lousyaudiolibrary.reader.NativeAudioReader;
@@ -21,8 +19,6 @@ import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
 import com.lelloman.lousyaudiolibrary.reader.volume.NativeVolumeReader;
 import com.lelloman.lousyaudiolibrary.view.CompoundVolumeView;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
-
-import java.util.Arrays;
 
 
 public class PlayerFragment extends Fragment implements
@@ -32,7 +28,7 @@ public class PlayerFragment extends Fragment implements
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
-	private SlowAudioPlayer player = null;
+	private LousyAudioPlayer player = null;
 
 	private Button btnPause;
 	private Button btnPlay;
@@ -40,7 +36,6 @@ public class PlayerFragment extends Fragment implements
 	private SeekBar seekBarSpeed;
 	private CompoundVolumeView volumeView;
 	private IVolumeReader volumeReader;
-	private Equalizer equalizer;
 
 	private boolean hasSubWindow;
 	private float subWindowStart;
@@ -94,37 +89,13 @@ public class PlayerFragment extends Fragment implements
 		if (args != null)
 			resId = args.getInt(ARG_SOURCE_RES_ID, resId);
 
-		player = new SlowAudioPlayer(playerListener);
+		player = new LousyAudioPlayer(playerListener);
 
 		try {
 			AudioReader audioReader = new AudioReader(getActivity(), resId);
 			//IAudioReader audioReader = new DummyAudioReader(44100 * 10, 44100, 440,0,4096);
 			if (player.init(audioReader)) {
 				player.start();
-				new Handler().postDelayed(new Runnable() {
-					@Override
-					public void run() {
-						equalizer = new Equalizer(0, player.getAudioSessionId());
-						short[] range = equalizer.getBandLevelRange();
-						Log.d("PlayerFragment", "onCreate: "+ Arrays.toString(range));
-						short nBands = equalizer.getNumberOfBands();
-						short i = nBands;
-						short r = (short) (range[1] - range[0]);
-						double nBandm1 = nBands-1;
-
-						for(short j=0;j<nBands;j++){
-							try {
-								short value = (short) (range[0] + ((j) / nBandm1) * r);
-								Log.d("PlayerFramgnet", String.format("set band %s value %s", j, value));
-								equalizer.setBandLevel(j, j == 0 ? range[1] : range[0]);// value);
-
-							}catch (Exception e){
-								e.printStackTrace();
-							}
-						}
-						equalizer.setEnabled(true);
-					}
-				},2000);
 
 				int width = getResources().getDisplayMetrics().widthPixels;
 				int height = getResources().getDisplayMetrics().heightPixels;

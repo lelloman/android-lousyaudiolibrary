@@ -36,9 +36,10 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	@Override
 	public boolean init(IAudioReader reader) {
-		boolean output = super.init(reader);
-		if (output) initVocoder();
-		return output;
+		if(!super.init(reader)) return false;
+
+		initVocoder();
+		return true;
 	}
 
 	private void initVocoder() {
