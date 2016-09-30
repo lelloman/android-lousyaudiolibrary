@@ -57,4 +57,19 @@ public class LousyAudioPlayer extends SlowAudioPlayer {
 
 		return true;
 	}
+
+	public float[] getEqualizerBands(){
+		if(equalizer == null) return null;
+
+		float[] bands = new float[equalizer.getNumberOfBands()];
+		float min = equalizer.getBandLevelRange()[0];
+		float max = equalizer.getBandLevelRange()[1];
+		float span = max - min;
+
+		for (short i = 0; i <bands.length; i++) {
+			bands[i] = (equalizer.getBandLevel(i) - min) / span;
+		}
+
+		return bands;
+	}
 }

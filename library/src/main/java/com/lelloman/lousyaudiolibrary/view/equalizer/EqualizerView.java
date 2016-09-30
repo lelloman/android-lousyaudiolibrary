@@ -17,7 +17,7 @@ public class EqualizerView extends View {
 	private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private Path path = new Path();
 
-	int bgColor = 0xff888888;
+	int bgColor = 0xffbbbbbb;
 
 	public EqualizerView(Context context) {
 		super(context);
