@@ -1,5 +1,6 @@
 package com.lelloman.lousyaudiolibrary.view.equalizer;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -8,12 +9,15 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.lelloman.lousyaudiolibrary.R;
 
 
-public abstract class EqualizerDialogFragment extends DialogFragment implements DialogInterface.OnClickListener{
+@SuppressLint("ValidFragment")
+public class EqualizerDialogFragment extends DialogFragment implements DialogInterface.OnClickListener{
 
 	public interface OnEqualizerSetListener {
 		void onEqualizerSet(float[] bands);
@@ -23,6 +27,10 @@ public abstract class EqualizerDialogFragment extends DialogFragment implements 
 
 	private OnEqualizerSetListener listener;
 	private EqualizerView equalizerView;
+
+	public EqualizerDialogFragment(){
+
+	}
 
 	public EqualizerDialogFragment(float[] bands){
 		Bundle args = new Bundle();
@@ -44,6 +52,22 @@ public abstract class EqualizerDialogFragment extends DialogFragment implements 
 		listener = null;
 	}
 
+	@Override
+	public void onStart(){
+		super.onStart();
+
+		// safety check
+		if (getDialog() == null)
+			return;
+
+		int dialogWidth = (int) (getResources().getDisplayMetrics().widthPixels * .9f);
+		int dialogHeight = getResources().getDimensionPixelSize(R.dimen.dialog_equilizer_view_height);
+
+		getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
+
+		// ... other stuff you want to do in your onStart() method
+	}
+
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -57,20 +81,38 @@ public abstract class EqualizerDialogFragment extends DialogFragment implements 
 		Context context = getActivity();
 		equalizerView = new EqualizerView(context);
 		equalizerView.setLayoutParams(getEqualizerViewLayoutParams());
-		equalizerView.setValues(bands);
+		equalizerView.setBands(bands);
 
-		return new AlertDialog.Builder(context)
+		final AlertDialog alertDialog = new AlertDialog.Builder(context)
 				.setTitle(getTitle())
 				.setView(equalizerView)
 				.setPositiveButton(getOkString(), this)
 				.setNeutralButton(getResetString(), this)
 				.create();
+
+		alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+			@Override
+			public void onShow(DialogInterface dialog) {
+
+				Button b = alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+				b.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View view) {
+
+					}
+				});
+			}
+		});
+
+		return alertDialog;
 	}
 
 	protected ViewGroup.LayoutParams getEqualizerViewLayoutParams(){
 
 		int width = ViewGroup.LayoutParams.MATCH_PARENT;
-		int height = (int) getResources().getDimension(R.dimen.dialog_equilizer_view_height);
+		int height = getResources().getDimensionPixelSize(R.dimen.dialog_equilizer_view_height);
 		return new ViewGroup.LayoutParams(width, height);
 	}
 
@@ -86,6 +128,7 @@ public abstract class EqualizerDialogFragment extends DialogFragment implements 
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
+
 		OnEqualizerSetListener listener = this.listener;
 		if(listener == null){
 			Fragment fragment = getTargetFragment();
@@ -95,7 +138,7 @@ public abstract class EqualizerDialogFragment extends DialogFragment implements 
 		}
 
 		if(listener != null && equalizerView != null){
-			listener.onEqualizerSet(equalizerView.getValues());
+			listener.onEqualizerSet(equalizerView.getBands());
 		}
 	}
 }

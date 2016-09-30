@@ -21,13 +21,12 @@
             android:layout_height="wrap_content"
             android:text="PAUSE"/>
 
-        <ToggleButton
-            android:id="@+id/btnSlow"
+        <ImageButton
+            android:id="@+id/btnEqualizer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOff="OFF"
-            android:textOn="ON"
-            />
+            android:src="@drawable/ic_equalizer_black_48dp"/>
+
     </LinearLayout>
 
     <com.lelloman.lousyaudiolibrary.view.CompoundVolumeView

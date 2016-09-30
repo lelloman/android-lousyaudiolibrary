@@ -7,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
-import android.widget.ToggleButton;
 
 import com.lelloman.lousyaudiolibrary.player.AudioPlayer;
 import com.lelloman.lousyaudiolibrary.player.LousyAudioPlayer;
@@ -19,6 +19,7 @@ import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
 import com.lelloman.lousyaudiolibrary.reader.volume.NativeVolumeReader;
 import com.lelloman.lousyaudiolibrary.view.CompoundVolumeView;
 import com.lelloman.lousyaudiolibrary.view.VolumeView;
+import com.lelloman.lousyaudiolibrary.view.equalizer.EqualizerDialogFragment;
 
 
 public class PlayerFragment extends Fragment implements
@@ -32,7 +33,7 @@ public class PlayerFragment extends Fragment implements
 
 	private Button btnPause;
 	private Button btnPlay;
-	private ToggleButton btnSlow;
+	private ImageButton btnEqualizer;
 	private SeekBar seekBarSpeed;
 	private CompoundVolumeView volumeView;
 	private IVolumeReader volumeReader;
@@ -124,9 +125,9 @@ public class PlayerFragment extends Fragment implements
 
 		View rootView = inflater.inflate(R.layout.fragment_audio_player, container, false);
 
-		btnSlow = (ToggleButton) rootView.findViewById(R.id.btnSlow);
 		btnPlay = (Button) rootView.findViewById(R.id.btnPlay);
 		btnPause = (Button) rootView.findViewById(R.id.btnPause);
+		btnEqualizer = (ImageButton) rootView.findViewById(R.id.btnEqualizer);
 		seekBarSpeed = (SeekBar) rootView.findViewById(R.id.seekbarSpeed);
 		volumeView = (CompoundVolumeView) rootView.findViewById(R.id.volumeView);
 
@@ -142,9 +143,9 @@ public class PlayerFragment extends Fragment implements
 
 		btnPlay.setOnClickListener(this);
 		btnPause.setOnClickListener(this);
-		btnSlow.setOnClickListener(this);
 		seekBarSpeed.setOnSeekBarChangeListener(this);
 		volumeView.setListener(this);
+		btnEqualizer.setOnClickListener(this);
 
 		return rootView;
 	}
@@ -154,7 +155,7 @@ public class PlayerFragment extends Fragment implements
 	public void onDestroyView() {
 		super.onDestroyView();
 
-		btnSlow = null;
+		btnEqualizer = null;
 		btnPlay = null;
 		btnPause = null;
 		seekBarSpeed = null;
@@ -180,9 +181,10 @@ public class PlayerFragment extends Fragment implements
 			case R.id.btnPause:
 				player.pause();
 				break;
-			case R.id.btnSlow:
-				player.setSlowScale(btnSlow.isChecked() ? .2 : 1);
-				seekBarSpeed.setProgress(btnSlow.isChecked() ? 0 : seekBarSpeed.getMax());
+			case R.id.btnEqualizer:
+				EqualizerDialogFragment fragment = new EqualizerDialogFragment(new float[]{.5f,.5f,.5f,.5f,.5f,.5f});
+				fragment.setTargetFragment(this, 123);
+				fragment.show(getFragmentManager(),EqualizerDialogFragment.class.getSimpleName());
 				break;
 		}
 	}
@@ -200,7 +202,6 @@ public class PlayerFragment extends Fragment implements
 	public void onStopTrackingTouch(SeekBar seekBar) {
 
 		player.setSlowScale(seekBar.getProgress() / 10000. * .8 + .2);
-		btnSlow.setChecked(player.isSlow());
 	}
 
 	@Override
