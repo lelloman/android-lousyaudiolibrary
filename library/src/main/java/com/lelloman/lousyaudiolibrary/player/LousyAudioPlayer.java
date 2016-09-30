@@ -36,26 +36,36 @@ public class LousyAudioPlayer extends SlowAudioPlayer {
 
 				short[] range = equalizer.getBandLevelRange();
 				short nBands = equalizer.getNumberOfBands();
-				short i = nBands;
 				short r = (short) (range[1] - range[0]);
-				double nBandm1 = nBands-1;
+				short mid = (short) (r / 2);
 
 				for(short j=0;j<nBands;j++){
 					try {
-						short value = (short) (range[0] + ( 1 - (j) / nBandm1) * r);
-						Log.d("PlayerFramgnet", String.format("set band %s value %s", j, value));
-						equalizer.setBandLevel(j, value);
+						equalizer.setBandLevel(j, mid);
 					}catch (Exception e){
 						e.printStackTrace();
 					}
 				}
-
 				Log.d("PlayerFragment", "onCreate: "+ Arrays.toString(range));
 				equalizer.setEnabled(true);
 			}
 		}, 2000);
 
 		return true;
+	}
+
+	public void setEqualizerBands(float[] bands){
+		if(equalizer == null) return;
+
+		float min = equalizer.getBandLevelRange()[0];
+		float max = equalizer.getBandLevelRange()[1];
+		float span = max - min;
+
+		for (short i = 0; i < bands.length; i++) {
+			short v = (short) ((bands[i] * span) + min);
+			equalizer.setBandLevel(i, v);
+		}
+
 	}
 
 	public float[] getEqualizerBands(){

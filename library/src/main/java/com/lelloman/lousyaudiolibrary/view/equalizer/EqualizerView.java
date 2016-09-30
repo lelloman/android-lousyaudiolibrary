@@ -13,9 +13,14 @@ import android.view.View;
 
 public class EqualizerView extends View {
 
+	public interface OnBandUpdatesListener {
+		void onBandsUpdate(float[] bands);
+	}
+
 	private float[] bands;
 	private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private Path path = new Path();
+	private OnBandUpdatesListener listener;
 
 	int bgColor = 0xffbbbbbb;
 
@@ -38,6 +43,10 @@ public class EqualizerView extends View {
 	public EqualizerView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 		init();
+	}
+
+	public void setOnBandsUpdateListener(OnBandUpdatesListener listener){
+		this.listener = listener;
 	}
 
 	private void init(){
@@ -63,8 +72,8 @@ public class EqualizerView extends View {
 		for(int i = 0; i< bands.length-1; i++){
 			nextX = x + xStep;
 
-			y = bands[i] * height;
-			nextY = bands[i+1] * height;
+			y = (1-bands[i]) * height;
+			nextY = (1-bands[i+1]) * height;
 
 			path.moveTo(x, y);
 			path.lineTo(nextX, nextY);
@@ -89,18 +98,15 @@ public class EqualizerView extends View {
 		switch(event.getAction()){
 			case MotionEvent.ACTION_DOWN:
 			case MotionEvent.ACTION_MOVE:
-				onTouchMove(event.getX(), event.getY());
-				return true;
-
 			case MotionEvent.ACTION_UP:
-				onTouchUp(event.getX(), event.getY());
+				updateBands(event.getX(), event.getY());
 				return true;
 		}
 
 		return super.onTouchEvent(event);
 	}
 
-	private void onTouchMove(float x, float y){
+	private void updateBands(float x, float y){
 		if(bands == null) return;
 
 		int closestBand = -1;
@@ -119,15 +125,12 @@ public class EqualizerView extends View {
 
 		if(closestBand < 0) return;
 
-		float v = y / getHeight();
+		float v = 1 - y / getHeight();
 		if(v < 0) v = 0;
 		else if(v > 1) v = 1;
 		bands[closestBand] = v;
 
 		postInvalidate();
-	}
-
-	private void onTouchUp(float x, float y){
-
+		if(listener != null) listener.onBandsUpdate(bands);
 	}
 }

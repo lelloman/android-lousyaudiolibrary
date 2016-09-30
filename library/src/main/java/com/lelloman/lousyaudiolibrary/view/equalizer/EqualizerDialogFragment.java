@@ -17,10 +17,11 @@ import com.lelloman.lousyaudiolibrary.R;
 
 
 @SuppressLint("ValidFragment")
-public class EqualizerDialogFragment extends DialogFragment implements DialogInterface.OnClickListener{
+public class EqualizerDialogFragment extends DialogFragment implements DialogInterface.OnClickListener, EqualizerView.OnBandUpdatesListener {
 
 	public interface OnEqualizerSetListener {
 		void onEqualizerSet(float[] bands);
+		void onEqualizerReset(float[] bands);
 	}
 
 	public static final String ARG_BANDS = "argNBands";
@@ -56,7 +57,6 @@ public class EqualizerDialogFragment extends DialogFragment implements DialogInt
 	public void onStart(){
 		super.onStart();
 
-		// safety check
 		if (getDialog() == null)
 			return;
 
@@ -65,7 +65,11 @@ public class EqualizerDialogFragment extends DialogFragment implements DialogInt
 
 		getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
 
-		// ... other stuff you want to do in your onStart() method
+	}
+
+	@Override
+	public void onBandsUpdate(float[] bands) {
+		if(getListener() != null) listener.onEqualizerSet(bands);
 	}
 
 	@NonNull
@@ -82,6 +86,7 @@ public class EqualizerDialogFragment extends DialogFragment implements DialogInt
 		equalizerView = new EqualizerView(context);
 		equalizerView.setLayoutParams(getEqualizerViewLayoutParams());
 		equalizerView.setBands(bands);
+		equalizerView.setOnBandsUpdateListener(this);
 
 		final AlertDialog alertDialog = new AlertDialog.Builder(context)
 				.setTitle(getTitle())
@@ -101,6 +106,13 @@ public class EqualizerDialogFragment extends DialogFragment implements DialogInt
 					@Override
 					public void onClick(View view) {
 
+						float[] bands = equalizerView.getBands();
+						for(int i=0;i<bands.length;i++){
+							bands[i] = .5f;
+						}
+						OnEqualizerSetListener listener = getListener();
+						if(listener != null) listener.onEqualizerReset(bands);
+						equalizerView.setBands(bands);
 					}
 				});
 			}
@@ -117,25 +129,28 @@ public class EqualizerDialogFragment extends DialogFragment implements DialogInt
 	}
 
 	protected String getOkString(){
-		return getContext().getString(R.string.equilizer_dialog_ok);
+		return getContext().getString(R.string.equalizer_dialog_ok);
 	}
 	protected String getResetString(){
-		return getContext().getString(R.string.equilizer_dialog_reset);
+		return getContext().getString(R.string.equalizer_dialog_reset);
 	}
 	protected String getTitle(){
-		return getContext().getString(R.string.equilizer_dialog_title);
+		return getContext().getString(R.string.equalizer_dialog_title);
 	}
 
+	private OnEqualizerSetListener getListener(){
+		if(listener != null) return listener;
+
+		Fragment fragment = getTargetFragment();
+		if(fragment != null && fragment instanceof OnEqualizerSetListener){
+			listener = (OnEqualizerSetListener) fragment;
+		}
+		return listener;
+	}
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
 
-		OnEqualizerSetListener listener = this.listener;
-		if(listener == null){
-			Fragment fragment = getTargetFragment();
-			if(fragment != null && fragment instanceof OnEqualizerSetListener){
-				listener = (OnEqualizerSetListener) fragment;
-			}
-		}
+		OnEqualizerSetListener listener = getListener();
 
 		if(listener != null && equalizerView != null){
 			listener.onEqualizerSet(equalizerView.getBands());
