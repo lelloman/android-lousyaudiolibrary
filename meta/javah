@@ -1,0 +1,1 @@
+javah -classpath "/home/lelloman/Android/Sdk/platforms/android-24/android.jar:/home/lelloman/AndroidStudioProjects/LousyAudioLibrary/library/build/intermediates/classes/debug" com.lelloman.lousyaudiolibrary.reader.volume.NativeVolumeReader
