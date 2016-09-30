@@ -84,6 +84,13 @@ public class AudioPlayer implements Runnable {
 		return state;
 	}
 
+	public int getAudioSessionId(){
+
+		int v = audioTrack == null ? 0 : audioTrack.getAudioSessionId();
+		Log.d(AudioPlayer.class.getSimpleName(), "getAudioSessionId: "+ v);
+		return v;
+	}
+
 	@Override
 	public void run() {
 
