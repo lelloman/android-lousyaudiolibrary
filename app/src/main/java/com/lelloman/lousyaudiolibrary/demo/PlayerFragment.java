@@ -109,7 +109,7 @@ public class PlayerFragment extends Fragment implements
 						tot*4,
 						tot*6
 				};
-				volumeReader = new NativeVolumeReader(new NativeAudioReader(getActivity(), resId), intervals);
+				volumeReader = NativeVolumeReader.createAsyn(new NativeAudioReader(getActivity(), resId), intervals);
 				//volumeReader = new VolumeReader(new DummyAudioReader(44100 * 10, 44100, 440,0,4096), intervals);
 			} else {
 				throw new Exception("mboh");

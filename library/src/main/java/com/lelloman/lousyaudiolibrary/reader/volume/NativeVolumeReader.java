@@ -3,60 +3,91 @@ package com.lelloman.lousyaudiolibrary.reader.volume;
 
 import com.lelloman.lousyaudiolibrary.reader.NativeAudioReader;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class NativeVolumeReader extends IVolumeReader{
+public class NativeVolumeReader extends IVolumeReader  implements Serializable {
+
+	public static NativeVolumeReader createSync(final NativeAudioReader audioReader, int... zoomLevels) {
+		return new NativeVolumeReader(audioReader, true, zoomLevels);
+	}
+
+	public static NativeVolumeReader createAsyn(NativeAudioReader audioReader, int... zoomLevels) {
+		return new NativeVolumeReader(audioReader, false, zoomLevels);
+	}
+
+	public static NativeVolumeReader fromSerializableBucket(Object serializableBucket){
+		try {
+			return new NativeVolumeReader(serializableBucket);
+		}catch (Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public NativeVolumeReader(Object object){
+		super(object);
+	}
 
 	protected NativeVolumeReader(IVolumeReader parent, float start, float end) {
 		super(parent, start, end);
 	}
 
-	public NativeVolumeReader(final NativeAudioReader audioReader, final int...zoomLevels){
+	protected NativeVolumeReader(final NativeAudioReader audioReader, boolean sync, final int... zoomLevels) {
 		super(audioReader, zoomLevels);
 		reading = true;
 
 		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
-		for(int i=0;i<zoomLevels.length;i++){
+		for (int i = 0; i < zoomLevels.length; i++) {
 			int pcmFramesPerVolume = (int) (totalFrames / zoomLevels[i]);
 			makers[i] = new VolumeMaker(i, pcmFramesPerVolume, data[i].length);
 		}
 
-		new Thread(new Runnable(){
-			@Override
-			public void run() {
-
-				while(cursor < totalFrames && !audioReader.getSawOutputEOS()){
-					ByteBuffer nextChunk = audioReader.nextNativeChunk();
-					for(VolumeMaker maker : makers){
-						maker.nextSample(nextChunk);
-					}
-					cursor++;
+		if (sync) {
+			load(audioReader, makers);
+		} else {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					load(audioReader, makers);
 				}
-
-				for(int i=0;i<zoomLevels.length;i++){
-					VolumeMaker maker = makers[i];
-					double[] volume = new double[maker.size];
-					maker.nativeData.order(ByteOrder.nativeOrder());
-					maker.nativeData.asDoubleBuffer().get(volume);
-					data[i] = volume;
-
-				}
-				if(listener != null){
-					listener.onFrameReadingEnd();
-				}
-				reading = false;
-				synchronized (children){
-					children.clear();
-				}
-			}
-		}).start();
+			}).start();
+		}
 	}
+
+	private void load(NativeAudioReader audioReader, VolumeMaker[] makers) {
+
+		while (cursor < totalFrames && !audioReader.getSawOutputEOS()) {
+			ByteBuffer nextChunk = audioReader.nextNativeChunk();
+			for (VolumeMaker maker : makers) {
+				maker.nextSample(nextChunk);
+			}
+			cursor++;
+		}
+
+		for (int i = 0; i < zoomLevels.length; i++) {
+			VolumeMaker maker = makers[i];
+			double[] volume = new double[maker.size];
+			maker.nativeData.order(ByteOrder.nativeOrder());
+			maker.nativeData.asDoubleBuffer().get(volume);
+			data[i] = volume;
+
+		}
+		if (listener != null) {
+			listener.onFrameReadingEnd();
+		}
+		reading = false;
+		synchronized (children) {
+			children.clear();
+		}
+	}
+
 
 	@Override
 	public IVolumeReader subWindow(float start, float end) {
 		IVolumeReader output = new NativeVolumeReader(this, start, end);
-		if(reading) {
+		if (reading) {
 			synchronized (children) {
 				children.add(output);
 			}
@@ -74,7 +105,7 @@ public class NativeVolumeReader extends IVolumeReader{
 		final ByteBuffer nativeAttrsDouble;
 		final ByteBuffer nativeAttrsInt;
 
-		public VolumeMaker(int index, int pcmFramesPerVolumeFrame, int size){
+		public VolumeMaker(int index, int pcmFramesPerVolumeFrame, int size) {
 			this.pcmFramesPerVolumeFrame = pcmFramesPerVolumeFrame;
 			this.size = size;
 
@@ -90,7 +121,7 @@ public class NativeVolumeReader extends IVolumeReader{
 			nativeAttrsInt.asIntBuffer().put(new int[]{0, 0});
 		}
 
-		public void nextSample(ByteBuffer sample){
+		public void nextSample(ByteBuffer sample) {
 			NativeVolumeReader.this.nextSample(nativeAttrsDouble, nativeAttrsInt, nativeData, size, sample, sample.limit());
 		}
 	}
