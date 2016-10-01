@@ -38,7 +38,7 @@ public class LousyAudioPlayer extends SlowAudioPlayer {
 					short[] range = equalizer.getBandLevelRange();
 					short nBands = equalizer.getNumberOfBands();
 					short r = (short) (range[1] - range[0]);
-					short mid = (short) (r / 2);
+					short mid = (short) (r / 2 + range[0]);
 
 					for (short j = 0; j < nBands; j++) {
 						try {
