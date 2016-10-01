@@ -32,22 +32,26 @@ public class LousyAudioPlayer extends SlowAudioPlayer {
 		new Handler().postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				equalizer = new Equalizer(0, getAudioSessionId());
+				try {
+					equalizer = new Equalizer(0, getAudioSessionId());
 
-				short[] range = equalizer.getBandLevelRange();
-				short nBands = equalizer.getNumberOfBands();
-				short r = (short) (range[1] - range[0]);
-				short mid = (short) (r / 2);
+					short[] range = equalizer.getBandLevelRange();
+					short nBands = equalizer.getNumberOfBands();
+					short r = (short) (range[1] - range[0]);
+					short mid = (short) (r / 2);
 
-				for(short j=0;j<nBands;j++){
-					try {
-						equalizer.setBandLevel(j, mid);
-					}catch (Exception e){
-						e.printStackTrace();
+					for (short j = 0; j < nBands; j++) {
+						try {
+							equalizer.setBandLevel(j, mid);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
+					Log.d("PlayerFragment", "onCreate: " + Arrays.toString(range));
+					equalizer.setEnabled(true);
+				}catch (Exception e){
+					e.printStackTrace();
 				}
-				Log.d("PlayerFragment", "onCreate: "+ Arrays.toString(range));
-				equalizer.setEnabled(true);
 			}
 		}, 2000);
 
