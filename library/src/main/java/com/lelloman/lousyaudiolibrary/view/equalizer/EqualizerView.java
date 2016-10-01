@@ -76,7 +76,7 @@ public class EqualizerView extends View {
 		int[] colors = new int[]{
 				colorSet.accent,
 				colorSet.primary,
-				0x88000000
+				colorSet.windowBackground
 		};
 		float[] positions = new float[]{
 			0,.5f,1.f
@@ -116,7 +116,7 @@ public class EqualizerView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 
-		canvas.drawColor(bgColor);
+		//canvas.drawColor(bgColor);
 		if(bands == null) return;
 
 		path.reset();
