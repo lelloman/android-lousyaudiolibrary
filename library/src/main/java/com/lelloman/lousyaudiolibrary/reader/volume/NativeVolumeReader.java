@@ -3,11 +3,10 @@ package com.lelloman.lousyaudiolibrary.reader.volume;
 
 import com.lelloman.lousyaudiolibrary.reader.NativeAudioReader;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class NativeVolumeReader extends IVolumeReader  implements Serializable {
+public class NativeVolumeReader extends IVolumeReader{
 
 	public static NativeVolumeReader createSync(final NativeAudioReader audioReader, int... zoomLevels) {
 		return new NativeVolumeReader(audioReader, true, zoomLevels);

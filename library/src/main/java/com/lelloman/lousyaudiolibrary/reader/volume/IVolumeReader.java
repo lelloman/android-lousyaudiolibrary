@@ -3,16 +3,14 @@ package com.lelloman.lousyaudiolibrary.reader.volume;
 
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class IVolumeReader implements Serializable {
+public abstract class IVolumeReader{
 
 	public interface OnVolumeReadListener {
 		void onNewFrame(int zoomLevel, int frameIndex, int totFrames, double value);
-
 		void onFrameReadingEnd();
 	}
 

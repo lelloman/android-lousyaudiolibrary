@@ -135,13 +135,11 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
 
     fft(spec2, N, -1);
 
-    double factor = size/4;
-    for (int i = 0; i < size; i++) {
-        spec2[i] /= factor;
-    }
+    scale(spec2, size,size/4);
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N; i++) {
         sigout[i] += window[i] * spec2[i];
+    }
 }
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoderMultiThread_next__Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2II
