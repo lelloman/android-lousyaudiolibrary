@@ -16,10 +16,8 @@ import android.view.View;
 
 import com.lelloman.lousyaudiolibrary.R;
 import com.lelloman.lousyaudiolibrary.reader.volume.IVolumeReader;
-import com.lelloman.lousyaudiolibrary.reader.volume.VolumeReader;
 
-
-public class VolumeView extends View implements VolumeReader.OnVolumeReadListener {
+public class VolumeView extends View{
 
 	public interface VolumeViewListener {
 		void onSingleTap(VolumeView volumeView, float percentX);
@@ -117,7 +115,6 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 
 	public void setVolumeReader(IVolumeReader volumeReader) {
 		this.volumeReader = volumeReader;
-		volumeReader.setOnVolumeReadListener(this);
 		selectZoomLevel(getWidth(), getHeight());
 		if (bitmap != null) {
 			drawBitmap();
@@ -201,7 +198,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 		postInvalidate();
 	}
 
-	@Override
+	/*@Override
 	public void onNewFrame(int zoomLevel, int frameIndex, int totFrames, double value) {
 
 		if (canvas == null || zoomLevel != this.zoomLevel) return;
@@ -215,7 +212,7 @@ public class VolumeView extends View implements VolumeReader.OnVolumeReadListene
 	public void onFrameReadingEnd() {
 		drawBitmap();
 		postInvalidate();
-	}
+	}*/
 
 	private void drawFrame(int i1, double value0) {
 		synchronized (BITMAP_LOCK) {
