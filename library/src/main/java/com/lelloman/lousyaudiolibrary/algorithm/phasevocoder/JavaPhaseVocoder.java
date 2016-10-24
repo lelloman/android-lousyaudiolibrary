@@ -1,6 +1,7 @@
 package com.lelloman.lousyaudiolibrary.algorithm.phasevocoder;
 
 import com.lelloman.lousyaudiolibrary.BufferManager;
+import com.lelloman.lousyaudiolibrary.Util;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import org.jtransforms.fft.DoubleFFT_1D;
@@ -45,12 +46,7 @@ public class JavaPhaseVocoder implements IPhaseVocoder {
 		fft = new DoubleFFT_1D(N);
 		output = new double[H];
 
-		win = new double[N];
-		for (int i = 0; i < N; i++) {
-			double j = (2 * Math.PI * i) / (N - 1);
-			double k = 1 - Math.cos(j);
-			win[i] = .5 * k;
-		}
+		win = Util.hanning(N);
 
 	}
 

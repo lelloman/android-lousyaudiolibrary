@@ -11,7 +11,7 @@ public class DummyAudioReader implements IAudioReader {
 	private int frameRate;
 	double frameRateDouble;
 	private int frequency;
-	private int duration;
+	//private int duration;
 	private int bufferSize;
 	private double[] doubleBuffer;
 	private byte[] byteBuffer;
@@ -26,7 +26,7 @@ public class DummyAudioReader implements IAudioReader {
 		this.frameRate = frameRate;
 		this.frameRateDouble = frameRate;
 		this.frequency = frequency;
-		this.duration = duration;
+		//this.duration = duration;
 		this.bufferSize = bufferSize;
 		this.durationMs = lengthFrames / (frameRate * 1000.);
 

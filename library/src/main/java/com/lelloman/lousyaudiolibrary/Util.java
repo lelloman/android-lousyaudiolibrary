@@ -35,6 +35,16 @@ public class Util {
 	private Util() {
 	}
 
+	public static double[] hanning(int N){
+		double[] win = new double[N];
+		for (int i = 0; i < N; i++) {
+			double j = (2 * Math.PI * i) / (N - 1);
+			double k = 1 - Math.cos(j);
+			win[i] = .5 * k;
+		}
+		return win;
+	}
+
 	public static final String md5(final String s) {
 		final String MD5 = "MD5";
 		try {

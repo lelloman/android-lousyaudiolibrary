@@ -49,7 +49,7 @@ public class PhaseVocoderTest {
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test
 	public void phaseVocoderPerformanceTest() {
-		int N = 4096 * 8;
+		int N = 4096 * 2;
 		int H = N / 16;
 		double tscale = .5;
 		int seconds = 5;
@@ -64,8 +64,8 @@ public class PhaseVocoderTest {
 		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoder.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed      native vocoder = %s", duration));
 
-		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoderMultiThread.class, tscale, N, H, seconds);
-		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed multithread vocoder = %s", duration));
+		//duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoderMultiThread.class, tscale, N, H, seconds);
+		//Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed multithread vocoder = %s", duration));
 	}
 
 	@Test
