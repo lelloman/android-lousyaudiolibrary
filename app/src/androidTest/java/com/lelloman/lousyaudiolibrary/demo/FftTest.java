@@ -9,6 +9,8 @@ import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
+import junit.framework.Assert;
+
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -18,11 +20,21 @@ public class FftTest {
 	public ActivityTestRule<TestActivity> mActivityRule = new ActivityTestRule<>(TestActivity.class);
 
 	@Test
-	public void testFft(){
+	public void testFftFunctionality(){
+		int[] frequencies = new int[]{
+				55, 110, 220, 440, 880
+		};
+
+		for(int freq : frequencies)
+			testFftWithFrequency(freq);
+	}
+
+	public void testFftWithFrequency(int frequency){
 
 		int framerate = 44100;
 		int length = framerate * 5;
-		int frequency = 220;
+		double min = frequency - 5;
+		double max = frequency + 5;
 		int bufferSize = 4096*2;
 		double[] window = Util.hanning(bufferSize);
 		int stepSize = bufferSize / 4;
@@ -30,7 +42,7 @@ public class FftTest {
 
 		double[] fftHolder = new double[bufferSize * 2];
 
-		IAudioReader reader = new DummyAudioReader(length, framerate, frequency, 0, 999);
+		IAudioReader reader = new DummyAudioReader(length, framerate, frequency, .9, 999);
 
 		BufferManager bufferManager = new BufferManager(reader, bufferSize,stepSize);
 		Fft fft = new Fft(bufferSize * 2);
@@ -45,20 +57,21 @@ public class FftTest {
 				fftHolder[i] = 0;
 			}
 
-			fft.realForward(fftHolder);
+			fft.realForwardMagnitude(fftHolder);
 
 			double maxValue = 0;
 			int maxIndex = 0;
 			for(int i=0;i<bufferSize;i++){
-				int i2 = i*2;
-				double v = Math.sqrt(Math.pow(fftHolder[i2], 2) + Math.pow(fftHolder[i2+1], 2));
+				double v = fftHolder[i];
 				if(v > maxValue){
 					maxValue = v;
 					maxIndex = i;
 				}
 			}
+			double maxFreq = binSize * maxIndex;
+			Assert.assertTrue(maxFreq < max && maxFreq > min);
 
-			Log.d(FftTest.class.getSimpleName(), String.format("max freq = %.2f v = %.2f", binSize * maxIndex, maxValue));
+			Log.d(FftTest.class.getSimpleName(), String.format("max freq = %.2f v = %.2f", maxFreq, maxValue));
 		}
 	}
 }

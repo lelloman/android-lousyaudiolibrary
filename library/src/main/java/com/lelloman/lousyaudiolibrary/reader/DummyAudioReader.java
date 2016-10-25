@@ -16,16 +16,18 @@ public class DummyAudioReader implements IAudioReader {
 	private double[] doubleBuffer;
 	private byte[] byteBuffer;
 	private double durationMs;
+	private double amplitude;
 
 	private int cursor;
 	private double phase;
 	private double phaseStep;
 
-	public DummyAudioReader(int lengthFrames, int frameRate, int frequency, int duration, int bufferSize){
+	public DummyAudioReader(int lengthFrames, int frameRate, int frequency, double amplitude, int bufferSize){
 		this.lengthFrames = lengthFrames;
 		this.frameRate = frameRate;
 		this.frameRateDouble = frameRate;
 		this.frequency = frequency;
+		this.amplitude = amplitude;
 		//this.duration = duration;
 		this.bufferSize = bufferSize;
 		this.durationMs = lengthFrames / (frameRate * 1000.);
@@ -39,7 +41,7 @@ public class DummyAudioReader implements IAudioReader {
 	@Override
 	public byte[] nextChunk() {
 
-		double amplitude = Short.MAX_VALUE * .7;
+		double amplitude = Short.MAX_VALUE * this.amplitude;
 		ByteBuffer bb = ByteBuffer.wrap(byteBuffer);
 		bb.order(ByteOrder.nativeOrder());
 		nextChunkDouble();

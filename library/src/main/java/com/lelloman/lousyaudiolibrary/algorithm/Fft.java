@@ -33,6 +33,14 @@ public class Fft {
 		byteBuffer.asDoubleBuffer().get(data);
 	}
 
+	public void realForwardMagnitude(double[] data){
+		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
+		doubleBuffer.put(data);
+
+		forwardMagnitude(byteBuffer, size/2);
+		byteBuffer.asDoubleBuffer().get(data);
+	}
+
 	public void realInverse(double[] data){
 		DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
 		doubleBuffer.put(data);
@@ -42,6 +50,7 @@ public class Fft {
 	}
 
 	private native void forward(ByteBuffer byteBuffer, int size);
+	private native void forwardMagnitude(ByteBuffer byteBuffer, int size);
 	private native void inverse(ByteBuffer byteBuffer, int size, boolean scale);
 	private native void dummy(ByteBuffer byteBuffer, int size);
 	public native void testArrayCopySingleThread(int size, int iterations);

@@ -15,7 +15,7 @@ import java.util.List;
 public class PhaseVocoderTester {
 
 	public static long testVocoderPerformanceMs(Class vocoderClass, double scale, int N, int H, int durationSeconds){
-		DummyAudioReader reader = new DummyAudioReader(44100 * durationSeconds, 44100, 440, 0, 4096);
+		DummyAudioReader reader = new DummyAudioReader(44100 * durationSeconds, 44100, 440, .7, 4096);
 
 		IPhaseVocoder vocoder;
 		try {
@@ -34,7 +34,7 @@ public class PhaseVocoderTester {
 	}
 
 	public static double testVocoderFunctionality(Class vocoderClass, double scale, int N, int H, int frequency){
-		DummyAudioReader reader = new DummyAudioReader(44100 * 5, 44100, frequency, 0, 4096);
+		DummyAudioReader reader = new DummyAudioReader(44100 * 5, 44100, frequency, .7, 4096);
 
 		IPhaseVocoder vocoder;
 		try {

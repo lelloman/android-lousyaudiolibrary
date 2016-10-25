@@ -32,7 +32,12 @@ public class Spectrogram {
 		window = Util.hanning(fftSize);
 	}
 
+	public List<byte[]> getData(){
+		return data;
+	}
+
 	public Spectrogram make() {
+
 		int fftSize2 = fftSize * 2;
 		data = new LinkedList<>();
 		double k = 127. / fftSize2;

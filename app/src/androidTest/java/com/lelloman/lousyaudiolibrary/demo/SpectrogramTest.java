@@ -22,7 +22,7 @@ public class SpectrogramTest {
     @Test
     public void mweh(){
 
-        IAudioReader reader = new DummyAudioReader(44100*3,44100,440,0,2000);
+        IAudioReader reader = new DummyAudioReader(44100*3,44100,440,.7,2000);
         int size = 4096*2;
         Spectrogram spectrogram = new Spectrogram(reader,size, 4).make();
 

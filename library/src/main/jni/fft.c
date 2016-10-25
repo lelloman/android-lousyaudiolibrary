@@ -76,6 +76,22 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward
     fft(data, size,1);
 }
 
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forwardMagnitude(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size){
+    double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
+
+    fft(data, size,1);
+
+    int mSize = size/2;
+    for(int i=0;i<mSize;i++){
+        int i2 = i*2;
+        double v = sqrt(pow(data[i2], 2) + pow(data[i2+1], 2));
+        data[i] = v;
+    }
+    for(int i=mSize;i<size;i++){
+        data[i] = 0;
+    }
+}
+
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *env, jobject thiz, jobject byteBuffer, jint size, jboolean scaleOutput){
     double* data = (double*) (*env)->GetDirectBufferAddress(env, byteBuffer);
 

@@ -16,6 +16,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_dummy
   (JNIEnv *, jobject, jobject, jint);
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forward(JNIEnv *, jobject, jobject, jint);
+JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_forwardMagnitude(JNIEnv *, jobject, jobject, jint);
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_Fft_inverse(JNIEnv *, jobject, jobject, jint, jboolean);
 
 /*
