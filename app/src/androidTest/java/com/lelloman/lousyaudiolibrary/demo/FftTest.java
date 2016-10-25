@@ -26,7 +26,6 @@ public class FftTest {
 		int bufferSize = 4096*2;
 		double[] window = Util.hanning(bufferSize);
 		int stepSize = bufferSize / 4;
-		bufferSize -= stepSize;
 		double binSize = 44100. / bufferSize;
 
 		double[] fftHolder = new double[bufferSize * 2];

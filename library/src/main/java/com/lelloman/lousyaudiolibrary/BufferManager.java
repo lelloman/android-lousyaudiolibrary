@@ -12,14 +12,13 @@ public class BufferManager {
 	private int cursor = 0;
 	private boolean end = false;
 
-
 	public BufferManager(IAudioReader reader, int bufferSize, int stepSize) {
 
-		this.bufferSize = bufferSize;
+		this.bufferSize = bufferSize-stepSize;
 		this.stepSize = stepSize;
 		this.reader = reader;
 
-		this.buffer = new double[bufferSize + stepSize];
+		this.buffer = new double[bufferSize];
 
 		initBuffer();
 	}
