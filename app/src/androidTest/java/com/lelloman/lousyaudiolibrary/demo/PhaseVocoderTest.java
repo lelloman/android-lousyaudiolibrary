@@ -10,7 +10,6 @@ import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.IPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.JavaPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
-import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderMultiThread;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderOld;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.PhaseVocoderTester;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.VocoderType;
@@ -25,7 +24,7 @@ import org.junit.Test;
 public class PhaseVocoderTest {
 
 	@Rule
-	public ActivityTestRule<VocoderTestActivity> mActivityRule = new ActivityTestRule<>(VocoderTestActivity.class);
+	public ActivityTestRule<TestActivity> mActivityRule = new ActivityTestRule<>(TestActivity.class);
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test

@@ -43,6 +43,10 @@ public class BufferManager {
 		}
 	}
 
+	public boolean hasNext(){
+		return !reader.getSawOutputEOS();
+	}
+
 	public double[] next() {
 
 		if (end) return null;

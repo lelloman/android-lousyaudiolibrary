@@ -22,12 +22,12 @@ public class Spectrogram {
     private double[] fftHolder;
     private List<byte[]> data;
 
-    public Spectrogram(IAudioReader audioReader, int fftSize){
+    public Spectrogram(IAudioReader audioReader, int fftSize, int stepFactor){
         this.audioReader = audioReader;
         this.fftSize = fftSize;
         fft = new Fft(fftSize * 2);
         fftHolder = new double[fftSize * 2];
-        int stepSize = fftSize / 4;
+        int stepSize = fftSize / stepFactor;
         bufferManager = new BufferManager(audioReader, fftSize - stepSize, stepSize);
 
         window = Util.hanning(fftSize);
@@ -36,6 +36,9 @@ public class Spectrogram {
     public Spectrogram make(){
         int fftSize2 = fftSize * 2;
         data = new LinkedList<>();
+		double k = 127. / fftSize2;
+		double binSize = 44100. / fftSize;
+
         while(!audioReader.getSawOutputEOS()){
             double[] chunk = bufferManager.next();
             for(int i=0;i<fftSize;i++){
@@ -47,10 +50,8 @@ public class Spectrogram {
             fft.realForward(fftHolder);
 
             byte[] values = new byte[fftSize];
-			double k = 127. / fftSize2;
 			double maxValue = 0;
 			int maxIndex = -1;
-			double binSize = 44100. / fftSize;
             for(int i=0;i<fftSize;i++){
                 int i2 = i*2;
 				double value = Math.sqrt(Math.pow(fftHolder[i2], 2) + Math.pow(fftHolder[i2+1], 2));

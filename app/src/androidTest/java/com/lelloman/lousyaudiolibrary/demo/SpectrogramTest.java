@@ -13,10 +13,10 @@ import junit.framework.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class TestSpectrogram {
+public class SpectrogramTest {
 
     @Rule
-    public ActivityTestRule<VocoderTestActivity> mActivityRule = new ActivityTestRule<>(VocoderTestActivity.class);
+    public ActivityTestRule<TestActivity> mActivityRule = new ActivityTestRule<>(TestActivity.class);
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Test
@@ -24,7 +24,7 @@ public class TestSpectrogram {
 
         IAudioReader reader = new DummyAudioReader(44100*3,44100,440,0,2000);
         int size = 4096*2;
-        Spectrogram spectrogram = new Spectrogram(reader,size).make();
+        Spectrogram spectrogram = new Spectrogram(reader,size, 4).make();
 
         Assert.assertTrue(spectrogram != null);
     }
