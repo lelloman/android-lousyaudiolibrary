@@ -3,6 +3,7 @@ package com.lelloman.lousyaudiolibrary.demo;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.rule.ActivityTestRule;
+import android.util.Log;
 
 import com.lelloman.lousyaudiolibrary.algorithm.Spectrogram;
 import com.lelloman.lousyaudiolibrary.reader.DummyAudioReader;
@@ -32,23 +33,25 @@ public class SpectrogramTest {
 
         IAudioReader reader = new DummyAudioReader(44100*3,44100,frequency,.7,2000);
         int size = 4096*2;
-        Spectrogram spectrogram = new Spectrogram(reader,size, 4).make();
+		int stepFactor = 4;
+        Spectrogram spectrogram = new Spectrogram(reader,size, stepFactor).make();
 
-		List<byte[]> data = spectrogram.getData();
+		List<double[]> data = spectrogram.getData();
 		double resolution = spectrogram.resolution;
 		double min = frequency - 5;
 		double max = frequency + 5;
-		for(byte[] array : data) {
+		for(double[] array : data) {
 			int maxIndex = -1;
 			double maxValue = 0;
 			for (int i = 0; i < array.length; i++) {
-				byte v = array[i];
+				double v = array[i];
 				if(v > maxValue){
 					maxValue = v;
 					maxIndex = i;
 				}
 			}
 			double maxFreq = resolution * maxIndex;
+			Log.d(SpectrogramTest.class.getSimpleName(), String.format("max freq %.2f", maxFreq));
 			Assert.assertTrue(maxFreq < max && maxFreq > min);
 		}
 
