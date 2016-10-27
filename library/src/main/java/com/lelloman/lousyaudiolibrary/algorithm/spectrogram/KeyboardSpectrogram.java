@@ -18,6 +18,7 @@ public class KeyboardSpectrogram extends Spectrogram {
 
 	public interface KeyboardSpectrogramListener {
 		void onNewKeyboardFrame(double[] frame);
+		void onReadKeyboardFramesEnd();
 	}
 
 	private KeyboardSpectrogramListener listener;
@@ -44,5 +45,10 @@ public class KeyboardSpectrogram extends Spectrogram {
 		}
 
 		listener.onNewKeyboardFrame(pitches);
+	}
+
+	@Override
+	protected void onDataEnd() {
+		listener.onReadKeyboardFramesEnd();
 	}
 }

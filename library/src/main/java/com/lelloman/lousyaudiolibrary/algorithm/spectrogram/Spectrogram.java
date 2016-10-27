@@ -34,7 +34,7 @@ public abstract class Spectrogram {
 		window = Util.hanning(bufferSize);
 	}
 
-	public Spectrogram make() {
+	public void make() {
 
 		int fftSize2 = fftSize * 2;
 		double k = 127. / fftSize2;
@@ -57,9 +57,9 @@ public abstract class Spectrogram {
 			}
 			onData(values, resolution);
 		}
-
-		return this;
+		onDataEnd();
 	}
 
 	protected abstract void onData(double[] data, double resolution);
+	protected abstract void onDataEnd();
 }

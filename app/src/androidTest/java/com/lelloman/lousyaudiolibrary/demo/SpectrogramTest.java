@@ -54,6 +54,11 @@ public class SpectrogramTest {
 				Log.d(SpectrogramTest.class.getSimpleName(), String.format("max frequency %.2f", maxFreq));
 				Assert.assertTrue(maxFreq < max && maxFreq > min);
 			}
+
+			@Override
+			protected void onDataEnd() {
+
+			}
 		}.make();
 
     }

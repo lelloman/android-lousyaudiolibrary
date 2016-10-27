@@ -8,12 +8,12 @@ import java.nio.ByteOrder;
 
 public class NativeVolumeReader extends IVolumeReader{
 
-	public static NativeVolumeReader createSync(final NativeAudioReader audioReader, int... zoomLevels) {
-		return new NativeVolumeReader(audioReader, true, zoomLevels);
+	public static NativeVolumeReader createSync(final NativeAudioReader audioReader, OnVolumeReadListener listener, int... zoomLevels) {
+		return new NativeVolumeReader(audioReader, true, listener, zoomLevels);
 	}
 
-	public static NativeVolumeReader createAsyn(NativeAudioReader audioReader, int... zoomLevels) {
-		return new NativeVolumeReader(audioReader, false, zoomLevels);
+	public static NativeVolumeReader createAsyn(NativeAudioReader audioReader,OnVolumeReadListener listener, int... zoomLevels) {
+		return new NativeVolumeReader(audioReader, false, listener, zoomLevels);
 	}
 
 	public static NativeVolumeReader fromSerializableBucket(Object serializableBucket){
@@ -33,9 +33,10 @@ public class NativeVolumeReader extends IVolumeReader{
 		super(parent, start, end);
 	}
 
-	protected NativeVolumeReader(final NativeAudioReader audioReader, boolean sync, final int... zoomLevels) {
+	protected NativeVolumeReader(final NativeAudioReader audioReader, boolean sync, OnVolumeReadListener listener, final int... zoomLevels) {
 		super(audioReader, zoomLevels);
 		reading = true;
+		this.listener = listener;
 
 		final VolumeMaker[] makers = new VolumeMaker[zoomLevels.length];
 		for (int i = 0; i < zoomLevels.length; i++) {
