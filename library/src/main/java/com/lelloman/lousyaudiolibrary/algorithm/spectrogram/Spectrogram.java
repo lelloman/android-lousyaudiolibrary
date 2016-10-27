@@ -1,13 +1,14 @@
-package com.lelloman.lousyaudiolibrary.algorithm;
+package com.lelloman.lousyaudiolibrary.algorithm.spectrogram;
 
 import com.lelloman.lousyaudiolibrary.BufferManager;
 import com.lelloman.lousyaudiolibrary.Util;
+import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.reader.IAudioReader;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class Spectrogram {
+public abstract class Spectrogram {
 
 	public static final String TAG = Spectrogram.class.getSimpleName();
 
@@ -19,7 +20,6 @@ public class Spectrogram {
 	private double[] window;
 	private double[] fftHolder;
 	public final double resolution;
-	private List<double[]> data;
 
 	public Spectrogram(IAudioReader audioReader, int bufferSize, int stepFactor) {
 		this.audioReader = audioReader;
@@ -34,14 +34,9 @@ public class Spectrogram {
 		window = Util.hanning(bufferSize);
 	}
 
-	public List<double[]> getData(){
-		return data;
-	}
-
 	public Spectrogram make() {
 
 		int fftSize2 = fftSize * 2;
-		data = new LinkedList<>();
 		double k = 127. / fftSize2;
 
 		while (!audioReader.getSawOutputEOS()) {
@@ -60,9 +55,11 @@ public class Spectrogram {
 				double value = Math.sqrt(Math.pow(fftHolder[i2], 2) + Math.pow(fftHolder[i2 + 1], 2));
 				values[i] = value * k;
 			}
-			data.add(values);
+			onData(values, resolution);
 		}
 
 		return this;
 	}
+
+	protected abstract void onData(double[] data, double resolution);
 }

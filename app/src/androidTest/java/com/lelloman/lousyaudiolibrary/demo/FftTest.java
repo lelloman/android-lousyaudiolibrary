@@ -71,7 +71,7 @@ public class FftTest {
 			double maxFreq = binSize * maxIndex;
 			Assert.assertTrue(maxFreq < max && maxFreq > min);
 
-			Log.d(FftTest.class.getSimpleName(), String.format("max freq = %.2f v = %.2f", maxFreq, maxValue));
+			Log.d(FftTest.class.getSimpleName(), String.format("max frequency = %.2f v = %.2f", maxFreq, maxValue));
 		}
 	}
 }
