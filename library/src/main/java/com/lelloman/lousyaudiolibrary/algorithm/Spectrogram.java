@@ -19,12 +19,14 @@ public class Spectrogram {
 	private BufferManager bufferManager;
 	private double[] window;
 	private double[] fftHolder;
+	public final double resolution;
 	private List<byte[]> data;
 
 	public Spectrogram(IAudioReader audioReader, int fftSize, int stepFactor) {
 		this.audioReader = audioReader;
 		this.fftSize = fftSize;
 		fft = new Fft(fftSize * 2);
+		resolution = 44100. / fftSize;
 		fftHolder = new double[fftSize * 2];
 		int stepSize = fftSize / stepFactor;
 		bufferManager = new BufferManager(audioReader, fftSize, stepSize);
@@ -41,7 +43,6 @@ public class Spectrogram {
 		int fftSize2 = fftSize * 2;
 		data = new LinkedList<>();
 		double k = 127. / fftSize2;
-		double binSize = 44100. / fftSize;
 
 		while (!audioReader.getSawOutputEOS()) {
 			double[] chunk = bufferManager.next();
@@ -54,22 +55,15 @@ public class Spectrogram {
 			fft.realForward(fftHolder);
 
 			byte[] values = new byte[fftSize];
-			double maxValue = 0;
-			int maxIndex = -1;
 			for (int i = 0; i < fftSize; i++) {
 				int i2 = i * 2;
 				double value = Math.sqrt(Math.pow(fftHolder[i2], 2) + Math.pow(fftHolder[i2 + 1], 2));
 				value *= k;
-				if (value > maxValue) {
-					maxValue = value;
-					maxIndex = i;
-				}
 				if (value > 127) value = 127;
 
 				values[i] = (byte) value;
 			}
 			data.add(values);
-			Log.d(TAG, String.format("max value = %s max index %s freq %s", maxValue, maxIndex, maxIndex * binSize));
 		}
 
 		return this;
