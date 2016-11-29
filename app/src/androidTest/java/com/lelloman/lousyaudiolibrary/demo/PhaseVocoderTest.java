@@ -54,6 +54,8 @@ public class PhaseVocoderTest {
 		double tscale = .5;
 		int seconds = 5;
 
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+
 		long duration = PhaseVocoderTester.testVocoderPerformanceMs(JavaPhaseVocoder.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed       java  vocoder = %s", duration));
 

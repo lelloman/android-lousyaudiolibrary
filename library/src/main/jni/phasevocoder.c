@@ -13,7 +13,7 @@
 
 #define PI 3.141592653589793
 #define PI2 6.283185307179586
-#define N_THREADS 3
+#define N_THREADS 2
 
 
 JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocoder_NativePhaseVocoder_next__Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2Ljava_nio_ByteBuffer_2II
@@ -120,39 +120,6 @@ static pthread_t threads[N_THREADS];
 static ThreadArg args[N_THREADS];
 static bool threads_init = false;
 
-void thread_shift_sig_out(void *threadArg){
-
-    ThreadArg *arg = (ThreadArg *) threadArg;
-    double *sigout = arg->data1;
-    int NmH = arg->size1;
-    int H = arg->size2;
-    int N = arg->size3;
-    pthread_mutex_t *mutex_start = arg->mutex_start;
-    pthread_cond_t *cond_start = arg->cond_start;
-    pthread_mutex_t *mutex_end = arg->mutex_end;
-    pthread_cond_t *cond_end = arg->cond_end;
-
-    for(;;) {
-        pthread_mutex_lock(mutex_start);
-        if(arg->wait_for_start)
-            pthread_cond_wait(cond_start, mutex_start);
-        pthread_mutex_unlock(mutex_start);
-
-        for (int i = 0; i < NmH; i++) {
-            sigout[i] = sigout[i + H];
-        }
-        for (int i = NmH; i < N; i++) {
-            sigout[i] = 0;
-        }
-
-        LOGE("thread %d finish about to signal", arg->id);
-        pthread_mutex_lock(mutex_end);
-        arg->task_completed = true;
-        arg->wait_for_start = true;
-        pthread_cond_signal(cond_end);
-        pthread_mutex_unlock(mutex_end);
-    }
-}
 
 void thread_make_spec_and_fft(void *threadArg){
     ThreadArg *arg = (ThreadArg*) threadArg;
@@ -182,7 +149,7 @@ void thread_make_spec_and_fft(void *threadArg){
         }
         fft(spec, N, 1);
 
-        LOGE("thread %d finish about to signal", arg->id);
+        //LOGE("thread %d finish about to signal", arg->id);
         pthread_mutex_lock(mutex_end);
         arg->task_completed = true;
         arg->wait_for_start = true;
@@ -209,13 +176,13 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
     int NmH = N-H;
 
 
-    ThreadArg *argSigout = &args[0];
+    /*ThreadArg *argSigout = &args[0];
     argSigout->data1 = sigout;
     argSigout->size1 = NmH;
     argSigout->size2 = H;
-    argSigout->size3 = N;
+    argSigout->size3 = N;*/
 
-    ThreadArg *argSpec1 = &args[1];
+    ThreadArg *argSpec1 = &args[0];
     argSpec1->size1 = halfN;
     argSpec1->size2 = N;
     argSpec1->size3 = 0;
@@ -223,7 +190,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
     argSpec1->data2 = window;
     argSpec1->data3 = buffer;
 
-    ThreadArg *argSpec2 = &args[2];
+    ThreadArg *argSpec2 = &args[1];
     argSpec2->size1 = halfN;
     argSpec2->size2 = N;
     argSpec2->size3 = H;
@@ -252,9 +219,9 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
         }
 
 
-        pthread_create(&threads[0], NULL, &thread_shift_sig_out, argSigout);
-        pthread_create(&threads[1], NULL, &thread_make_spec_and_fft, argSpec1);
-        pthread_create(&threads[2], NULL, &thread_make_spec_and_fft, argSpec2);
+        //pthread_create(&threads[0], NULL, &thread_shift_sig_out, argSigout);
+        pthread_create(&threads[0], NULL, &thread_make_spec_and_fft, argSpec1);
+        pthread_create(&threads[1], NULL, &thread_make_spec_and_fft, argSpec2);
     }else{
         for(int i=0;i<N_THREADS;i++){
           pthread_mutex_lock(args[i].mutex_start);
@@ -266,16 +233,24 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
 
     for(int i=0;i<N_THREADS;i++){
         ThreadArg *arg = &args[i];
-        LOGE("unleash thread %d", i);
+        //LOGE("unleash thread %d", i);
         arg->wait_for_start = false;
         pthread_mutex_unlock(arg->mutex_start);
         pthread_cond_signal(arg->cond_start);
     }
-    LOGE("unleash finished");
+    //LOGE("unleash finished");
+
+    for (int i = 0; i < NmH; i++) {
+        sigout[i] = sigout[i + H];
+    }
+    for (int i = NmH; i < N; i++) {
+        sigout[i] = 0;
+    }
+
    // usleep(10);
     for(int i=0;i<N_THREADS;i++){
         ThreadArg *arg = &args[i];
-        LOGE("wait for thread %d to finish", i);
+        //LOGE("wait for thread %d to finish", i);
         pthread_mutex_lock(arg->mutex_end);
         if(!arg->task_completed)
             pthread_cond_wait(arg->cond_end, arg->mutex_end);

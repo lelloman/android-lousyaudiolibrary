@@ -73,7 +73,9 @@ public class AudioPlayer implements Runnable {
 	public boolean start() {
 		if (state == STATE_READY_TO_PLAY) {
 			running = true;
-			new Thread(this).start();
+			Thread thread = new Thread(this);
+			thread.setPriority(Thread.MAX_PRIORITY);
+			thread.start();
 			return true;
 		} else {
 			return false;
