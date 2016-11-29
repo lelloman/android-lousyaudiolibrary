@@ -13,7 +13,7 @@ public enum VocoderType {
 	public final int index;
 
 	public static final VocoderType[] ALL = new VocoderType[]{
-			JAVA, HYBRID, NATIVE//, NATIVE_MULTITHREAD
+			JAVA, HYBRID, NATIVE, NATIVE_MULTITHREAD
 	};
 
 	VocoderType(Class clazz, int index){

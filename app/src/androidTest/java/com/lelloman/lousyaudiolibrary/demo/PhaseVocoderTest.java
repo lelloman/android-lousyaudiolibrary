@@ -10,6 +10,7 @@ import com.lelloman.lousyaudiolibrary.algorithm.Fft;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.IPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.JavaPhaseVocoder;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoder;
+import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderMultiThread;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.NativePhaseVocoderOld;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.PhaseVocoderTester;
 import com.lelloman.lousyaudiolibrary.algorithm.phasevocoder.VocoderType;
@@ -26,7 +27,7 @@ public class PhaseVocoderTest {
 	@Rule
 	public ActivityTestRule<TestActivity> mActivityRule = new ActivityTestRule<>(TestActivity.class);
 
-	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+	/*@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test
 	public void nativeArrayCopyPerformanceTest(){
 		Fft fft = new Fft(8);
@@ -43,7 +44,7 @@ public class PhaseVocoderTest {
 		fft.testArrayCopyMultiThread(SIZE, ITERATIONS);
 		duration = SystemClock.elapsedRealtimeNanos() - start;
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("array copy  multi thread duration %s", duration));
-	}
+	}*/
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 	@Test
@@ -63,14 +64,14 @@ public class PhaseVocoderTest {
 		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoder.class, tscale, N, H, seconds);
 		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed      native vocoder = %s", duration));
 
-		//duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoderMultiThread.class, tscale, N, H, seconds);
-		//Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed multithread vocoder = %s", duration));
+		duration = PhaseVocoderTester.testVocoderPerformanceMs(NativePhaseVocoderMultiThread.class, tscale, N, H, seconds);
+		Log.d(PhaseVocoderTest.class.getSimpleName(), String.format("elapsed multithread vocoder = %s", duration));
 	}
 
 	@Test
 	public void phaseVocoderFunctionalTest(){
 
-		VocoderType[] types = PhaseVocoderTester.getFunctionalVocoderTypes(55, 7, true);
+		VocoderType[] types = PhaseVocoderTester.getFunctionalVocoderTypes(55, 2, true);
 		Assert.assertEquals(VocoderType.ALL.length, types.length);
 
 	}
