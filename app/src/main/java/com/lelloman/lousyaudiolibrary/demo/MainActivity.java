@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		if(fragmentManager.findFragmentById(R.id.container) == null){
 			fragmentManager.beginTransaction()
-					.add(R.id.container, PlayerFragment.newInstance(R.raw.myladymychild), PlayerFragment.class.getSimpleName())
+					.add(R.id.container, PlayerFragment.newInstance(R.raw.testone), PlayerFragment.class.getSimpleName())
 					.commit();
 		}
 
