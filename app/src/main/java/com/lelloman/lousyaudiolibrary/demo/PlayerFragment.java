@@ -25,7 +25,8 @@ import com.lelloman.lousyaudiolibrary.view.equalizer.EqualizerDialogFragment;
 public class PlayerFragment extends Fragment implements
 		View.OnClickListener,
 		SeekBar.OnSeekBarChangeListener,
-		CompoundVolumeView.CompoundVolumeViewListener{
+		CompoundVolumeView.CompoundVolumeViewListener,
+		EqualizerDialogFragment.OnEqualizerSetListener {
 
 	public static final String ARG_SOURCE_RES_ID = "ARG_SOURCE_RES_ID";
 
@@ -66,8 +67,8 @@ public class PlayerFragment extends Fragment implements
 			if (volumeView != null)
 				volumeView.setCursor((float) percent);
 
-			if(hasSubWindow){
-				if(percent > subWindowEnd){
+			if (hasSubWindow) {
+				if (percent > subWindowEnd) {
 					player.seek(subWindowStart);
 				}
 			}
@@ -90,7 +91,10 @@ public class PlayerFragment extends Fragment implements
 		if (args != null)
 			resId = args.getInt(ARG_SOURCE_RES_ID, resId);
 
-		player = new LousyAudioPlayer(playerListener);
+		final int FRAME_SIZE = 4096 * 2;
+		final int HOP = FRAME_SIZE / 8;
+		final float SCALE = .2f;
+		player = new LousyAudioPlayer(playerListener, FRAME_SIZE, HOP, SCALE);
 
 		try {
 			AudioReader audioReader = new AudioReader(getActivity(), resId);
@@ -105,11 +109,11 @@ public class PlayerFragment extends Fragment implements
 
 				int[] intervals = new int[]{
 						tot,
-						tot*2,
-						tot*4,
-						tot*6
+						tot * 2,
+						tot * 4,
+						tot * 6
 				};
-				volumeReader = NativeVolumeReader.createAsyn(new NativeAudioReader(getActivity(), resId),null, intervals);
+				volumeReader = NativeVolumeReader.createAsyn(new NativeAudioReader(getActivity(), resId), null, intervals);
 				//volumeReader = new VolumeReader(new DummyAudioReader(44100 * 10, 44100, 440,0,4096), intervals);
 			} else {
 				throw new Exception("mboh");
@@ -135,7 +139,7 @@ public class PlayerFragment extends Fragment implements
 			volumeView.setVolumeReader(volumeReader);
 		}
 
-		if(hasSubWindow){
+		if (hasSubWindow) {
 			volumeView.setWindow(subWindowStart, subWindowEnd);
 		}
 
@@ -182,9 +186,10 @@ public class PlayerFragment extends Fragment implements
 				player.pause();
 				break;
 			case R.id.btnEqualizer:
-				EqualizerDialogFragment fragment = new EqualizerDialogFragment(new float[]{.5f,.5f,.5f,.5f,.5f,.5f});
+				EqualizerDialogFragment fragment =
+						EqualizerDialogFragment.newInstance(player.getEqualizerBands());
 				fragment.setTargetFragment(this, 123);
-				fragment.show(getFragmentManager(),EqualizerDialogFragment.class.getSimpleName());
+				fragment.show(getFragmentManager(), EqualizerDialogFragment.class.getSimpleName());
 				break;
 		}
 	}
@@ -218,7 +223,7 @@ public class PlayerFragment extends Fragment implements
 		subWindowStart = start;
 		subWindowEnd = end;
 
-		if(volumeView != null){
+		if (volumeView != null) {
 			volumeView.setWindow(start, end);
 		}
 	}
@@ -226,8 +231,18 @@ public class PlayerFragment extends Fragment implements
 	@Override
 	public void onWindowUnselected(CompoundVolumeView compoundVolumeView) {
 		hasSubWindow = false;
-		if(volumeView != null){
+		if (volumeView != null) {
 			volumeView.unSetWindow();
 		}
+	}
+
+	@Override
+	public void onEqualizerSet(float[] bands) {
+		player.setEqualizerBands(bands);
+	}
+
+	@Override
+	public void onEqualizerReset(float[] bands) {
+		player.setEqualizerBands(bands);
 	}
 }

@@ -93,7 +93,7 @@ JNIEXPORT void JNICALL Java_com_lelloman_lousyaudiolibrary_algorithm_phasevocode
 
     fft(spec2, N, -1);
 
-    scale(spec2, size,size/4);
+    scale(spec2, size,size);
 
     for (int i = 0; i < N; i++) {
         sigout[i] += window[i] * spec2[i];
