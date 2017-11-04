@@ -1,6 +1,5 @@
 package com.lelloman.lousyaudiolibrary.view.equalizer;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -16,12 +15,20 @@ import android.widget.Button;
 import com.lelloman.lousyaudiolibrary.R;
 
 
-@SuppressLint("ValidFragment")
 public class EqualizerDialogFragment extends DialogFragment implements DialogInterface.OnClickListener, EqualizerView.OnBandUpdatesListener {
 
 	public interface OnEqualizerSetListener {
 		void onEqualizerSet(float[] bands);
 		void onEqualizerReset(float[] bands);
+	}
+
+	public static EqualizerDialogFragment newInstance(float[] bands){
+		Bundle args = new Bundle();
+		args.putFloatArray(ARG_BANDS, bands);
+
+		EqualizerDialogFragment fragment = new EqualizerDialogFragment();
+		fragment.setArguments(args);
+		return fragment;
 	}
 
 	public static final String ARG_BANDS = "argNBands";
@@ -31,12 +38,6 @@ public class EqualizerDialogFragment extends DialogFragment implements DialogInt
 
 	public EqualizerDialogFragment(){
 
-	}
-
-	public EqualizerDialogFragment(float[] bands){
-		Bundle args = new Bundle();
-		args.putFloatArray(ARG_BANDS, bands);
-		setArguments(args);
 	}
 
 	@Override
