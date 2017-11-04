@@ -5,12 +5,12 @@ group='com.github.lelloman'
 
 // https://jitpack.io/com/github/lelloman/android-lousyaudiolibrary/v0.1.1/build.log
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "0.1.1"
 //        ndk {
@@ -36,5 +36,4 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.2.0'
-    //compile 'com.github.wendykierp:JTransforms:3.1'
 }

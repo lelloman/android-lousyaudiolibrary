@@ -45,8 +45,8 @@ public class SlowAudioPlayer extends BufferedAudioPlayer {
 
 	private void initVocoder() {
 		if (reader == null) return;
-		vocoder = new NativePhaseVocoderMultiThread(reader, scale, frameSize, hop);
-		//vocoder = new NativePhaseVocoder(reader, scale, frameSize, hop);
+//		vocoder = new NativePhaseVocoderMultiThread(reader, scale, frameSize, hop);
+		vocoder = new NativePhaseVocoder(reader, scale, frameSize, hop);
 		//vocoder = new JavaPhaseVocoder(reader, DEFAULT_SCALE, DEFAULT_FRAME_SIZE, DEFAULT_HOP);
 	}
 
